@@ -1,24 +1,24 @@
-import { getCurrentUserProfile } from "@/app/(auth)/actions";
+import { getCurrentUserProfile } from "@/app/[locale]/(auth)/actions";
 import { redirect } from "next/navigation";
 import { PortalHeader } from "@/components/layout/portal-header";
 
 /**
  * ============================================================================
- * WHOLESALER PORTAL LAYOUT
+ * SHOP OWNER PORTAL LAYOUT
  * ============================================================================
- * Wraps all wholesaler pages (/wholesaler/*) with the shared PortalHeader
+ * Wraps all retailer pages (/shop/*) with the shared PortalHeader
  * and ensures role-based authentication.
  * ============================================================================
  */
-export default async function WholesalerLayout({
+export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const profile = await getCurrentUserProfile();
 
-  // Defense in depth: Verify authenticated wholesaler
-  if (!profile || profile.role !== "WHOLESALER") {
+  // Defense in depth: Verify authenticated shop owner
+  if (!profile || profile.role !== "SHOP_OWNER") {
     redirect("/login");
   }
 

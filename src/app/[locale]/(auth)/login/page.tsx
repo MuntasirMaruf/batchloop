@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { signInAction } from "../actions";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +39,10 @@ export default function LoginPage() {
     <div className="text-left">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Welcome back
+          {t("signInTitle")}
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-          Sign in to your B2B Wholesale account
+          {t("signInSubtitle")}
         </p>
       </div>
 
@@ -58,7 +59,7 @@ export default function LoginPage() {
             htmlFor="email"
             className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1"
           >
-            Email Address
+            {t("email")}
           </label>
           <div className="relative">
             <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -68,7 +69,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
-              placeholder="you@company.com"
+              placeholder={t("emailPlaceholder")}
               className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
             />
           </div>
@@ -80,7 +81,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300"
             >
-              Password
+              {t("password")}
             </label>
             <Link
               href="/forgot-password"
@@ -97,7 +98,7 @@ export default function LoginPage() {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
               className="w-full pl-9 pr-10 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
             />
             <button
@@ -118,26 +119,26 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-2 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 text-white text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="w-full mt-2 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 text-white text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Signing in...</span>
+              <span>{t("signingIn")}</span>
             </>
           ) : (
-            <span>Sign In</span>
+            <span>{t("signInBtn")}</span>
           )}
         </button>
       </form>
 
       <div className="mt-6 text-center text-xs text-neutral-500 dark:text-neutral-400">
-        Don&apos;t have an account yet?{" "}
+        {t("dontHaveAccount")}{" "}
         <Link
           href="/register"
           className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
         >
-          Register your business
+          {t("registerNow")}
         </Link>
       </div>
     </div>

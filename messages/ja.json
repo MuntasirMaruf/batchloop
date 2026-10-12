@@ -1,0 +1,75 @@
+{
+  "common": {
+    "brand": "BatchLoop",
+    "tagline": "次世代B2B卸売マーケットプレイス",
+    "signIn": "ログイン",
+    "register": "新規登録",
+    "signOut": "ログアウト",
+    "portal": "ポータルへ移動",
+    "dashboard": "ダッシュボード",
+    "catalog": "カタログ",
+    "orders": "注文履歴",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "wholesaler": "卸売業者",
+    "shopOwner": "小売店主"
+  },
+  "nav": {
+    "forWholesalers": "卸売業者向け",
+    "forRetailers": "小売店舗向け",
+    "portalBadge": "ポータル",
+    "language": "言語"
+  },
+  "home": {
+    "badge": "次世代B2B卸売マーケットプレイス",
+    "title": "卸売業者と小売店の直接取引プラットフォーム",
+    "subtitle": "信頼できるサプライヤーと繋がり、透明な卸売価格で大口注文を行い、配送・決済をスムーズに管理します。",
+    "wholesalerCardTitle": "卸売業者向け",
+    "wholesalerCardDesc": "カタログを公開し、ワンクリック招待状でバイヤーを招待し、大口注文を一元管理します。",
+    "retailerCardTitle": "小売店舗向け",
+    "retailerCardDesc": "招待リンクから参加し、限定卸価格で商品を閲覧して仕入れを効率化します。",
+    "verifiedSuppliers": "認証済みB2Bサプライヤー",
+    "instantInvite": "即時招待自動連携",
+    "paymentTerms": "柔軟な支払い条件"
+  },
+  "auth": {
+    "createAccount": "ビジネスアカウント作成",
+    "joinNetwork": "B2B卸売ネットワークに参加する",
+    "selectBusinessType": "業態を選択してください",
+    "supplierSubtitle": "サプライヤー / 卸売業者",
+    "retailerSubtitle": "バイヤー / 小売店",
+    "invitedByWholesaler": "卸売業者からの招待",
+    "invitedNotice": "招待リンクから登録しています。登録完了後、店舗は自動的に連携されます。",
+    "businessName": "企業名 / 屋号",
+    "businessNamePlaceholderWholesaler": "株式会社〇〇卸売",
+    "businessNamePlaceholderRetailer": "〇〇商店",
+    "ownerName": "担当者 / 代表者名",
+    "ownerNamePlaceholder": "山田 太郎",
+    "email": "ビジネスメールアドレス",
+    "emailPlaceholder": "orders@business.com",
+    "phone": "電話番号",
+    "phonePlaceholder": "090-XXXX-XXXX",
+    "password": "パスワード",
+    "passwordPlaceholder": "6文字以上",
+    "createAccountBtn": "アカウントを作成して続ける",
+    "creatingAccount": "アカウント作成中...",
+    "alreadyHaveAccount": "既にアカウントをお持ちですか？",
+    "dontHaveAccount": "アカウントをお持ちでないですか？",
+    "registerNow": "今すぐ登録",
+    "signInTitle": "BatchLoop にログイン",
+    "signInSubtitle": "卸売ポータルと注文にアクセス",
+    "signInBtn": "ログイン",
+    "signingIn": "ログイン中..."
+  },
+  "portal": {
+    "welcome": "おかえりなさい",
+    "wholesalerPortal": "卸売ポータル",
+    "retailPortal": "小売ポータル",
+    "inviteBuyers": "バイヤーを招待",
+    "searchProducts": "卸売商品を検索..."
+  },
+  "footer": {
+    "copyright": "無断転載を禁じます。",
+    "rights": "BatchLoop B2B 卸売プラットフォーム"
+  }
+}

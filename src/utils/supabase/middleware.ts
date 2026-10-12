@@ -35,13 +35,15 @@ const supabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const createClient = async (request: NextRequest) => {
-  // Create an unmodified default response
-  let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+export const createClient = async (request: NextRequest, response?: NextResponse) => {
+  // Use passed-in response or create an unmodified default response
+  let supabaseResponse =
+    response ||
+    NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
 
   const supabase = createServerClient(supabaseUrl!, supabaseKey!, {
     cookies: {
@@ -69,6 +71,20 @@ export const createClient = async (request: NextRequest) => {
 
   const { pathname } = request.nextUrl;
 
+  /**
+   * I18N ROUTE NORMALIZATION:
+   * When a user visits a localized route like '/bn/wholesaler/dashboard' or '/ja/shop/catalog':
+   * 1. 'localeMatch' captures the language prefix ('/bn', '/ja', etc.).
+   * 2. 'normalizedPathname' strips that prefix ('/wholesaler/dashboard').
+   * This allows the route guard checks below (startsWith('/wholesaler')) to match
+   * consistently regardless of whether the user is viewing English, Bengali, or Japanese.
+   * 3. When issuing any redirect, '${localePrefix}/login' ensures the user stays in
+   * their chosen language without getting forced back to English.
+   */
+  const localeMatch = pathname.match(/^\/(bn|ja|en)(?=\/|$)/);
+  const localePrefix = localeMatch ? `/${localeMatch[1]}` : "";
+  const normalizedPathname = pathname.replace(/^\/(?:bn|ja|en)(?=\/|$)/, "") || "/";
+
   // Helper to preserve refreshed cookies when issuing redirects
   const createRedirectResponse = (url: URL) => {
     const redirectResponse = NextResponse.redirect(url);
@@ -92,43 +108,43 @@ export const createClient = async (request: NextRequest) => {
   // ==========================================================================
   // ROUTE GUARD 1: Wholesaler Portal (/wholesaler/*)
   // ==========================================================================
-  if (pathname.startsWith("/wholesaler")) {
+  if (normalizedPathname.startsWith("/wholesaler")) {
     // If not logged in -> redirect to login with return path
     if (!user) {
-      const loginUrl = new URL("/login", request.url);
+      const loginUrl = new URL(`${localePrefix}/login`, request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
       return createRedirectResponse(loginUrl);
     }
 
     // If logged in as Shop Owner -> block access and redirect to Shop Catalog
     if (userRole === "SHOP_OWNER") {
-      return createRedirectResponse(new URL("/shop/catalog", request.url));
+      return createRedirectResponse(new URL(`${localePrefix}/shop/catalog`, request.url));
     }
   }
 
   // ==========================================================================
   // ROUTE GUARD 2: Shop Owner Portal (/shop/*)
   // ==========================================================================
-  if (pathname.startsWith("/shop")) {
+  if (normalizedPathname.startsWith("/shop")) {
     // If not logged in -> redirect to login with return path
     if (!user) {
-      const loginUrl = new URL("/login", request.url);
+      const loginUrl = new URL(`${localePrefix}/login`, request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
       return createRedirectResponse(loginUrl);
     }
 
     // If logged in as Wholesaler -> block access and redirect to Wholesaler Dashboard
     if (userRole === "WHOLESALER") {
-      return createRedirectResponse(new URL("/wholesaler/dashboard", request.url));
+      return createRedirectResponse(new URL(`${localePrefix}/wholesaler/dashboard`, request.url));
     }
   }
 
   // ==========================================================================
   // ROUTE GUARD 3: Onboarding Page (/onboarding)
   // ==========================================================================
-  if (pathname.startsWith("/onboarding")) {
+  if (normalizedPathname.startsWith("/onboarding")) {
     if (!user) {
-      return createRedirectResponse(new URL("/login", request.url));
+      return createRedirectResponse(new URL(`${localePrefix}/login`, request.url));
     }
   }
 
@@ -136,13 +152,13 @@ export const createClient = async (request: NextRequest) => {
   // ROUTE GUARD 4: Public Auth Pages (/login, /register)
   // If already logged in, redirect straight to their role dashboard
   // ==========================================================================
-  if (pathname === "/login" || (pathname === "/register" && !request.nextUrl.searchParams.get("ref"))) {
+  if (normalizedPathname === "/login" || (normalizedPathname === "/register" && !request.nextUrl.searchParams.get("ref"))) {
     if (user) {
       if (userRole === "WHOLESALER") {
-        return createRedirectResponse(new URL("/wholesaler/dashboard", request.url));
+        return createRedirectResponse(new URL(`${localePrefix}/wholesaler/dashboard`, request.url));
       }
       if (userRole === "SHOP_OWNER") {
-        return createRedirectResponse(new URL("/shop/catalog", request.url));
+        return createRedirectResponse(new URL(`${localePrefix}/shop/catalog`, request.url));
       }
     }
   }

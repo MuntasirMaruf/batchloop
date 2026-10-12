@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { signUpAction } from "../actions";
 import { UserRole } from "@/types/auth";
 import {
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 
 function RegisterForm() {
+    const t = useTranslations("auth");
     const router = useRouter();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get("ref");
@@ -83,10 +85,10 @@ function RegisterForm() {
         <div className="text-left">
             <div className="mb-5 text-center">
                 <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                    Create Business Account
+                    {t("createAccount")}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                    Join the B2B wholesale network
+                    {t("joinNetwork")}
                 </p>
             </div>
 
@@ -95,16 +97,15 @@ function RegisterForm() {
                 <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-md flex items-start gap-2.5 text-xs text-blue-800 dark:text-blue-300">
                     <LinkIcon className="w-4 h-4 shrink-0 mt-0.5" />
                     <div>
-                        <span className="font-semibold block">Invited by Wholesaler</span>
-                        You are registering via an invitation link. Your shop will be
-                        automatically connected upon registration.
+                        <span className="font-semibold block">{t("invitedByWholesaler")}</span>
+                        {t("invitedNotice")}
                     </div>
                 </div>
             ) : (
                 /* Scenario 2: Role Selection Tabs */
                 <div className="mb-5">
                     <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-2">
-                        Select Your Business Type
+                        {t("selectBusinessType")}
                     </label>
                     <div className="grid grid-cols-2 gap-2.5">
                         <button
@@ -126,7 +127,7 @@ function RegisterForm() {
                                     Wholesaler
                                 </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                                    Supplier / Distributor
+                                    {t("supplierSubtitle")}
                                 </span>
                             </div>
                         </button>
@@ -150,7 +151,7 @@ function RegisterForm() {
                                     Shop Owner
                                 </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                                    Buyer / Retailer
+                                    {t("retailerSubtitle")}
                                 </span>
                             </div>
                         </button>
@@ -199,7 +200,7 @@ function RegisterForm() {
                         htmlFor="business_name"
                         className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1"
                     >
-                        Business / Store Name
+                        {t("businessName")}
                     </label>
                     <div className="relative">
                         <Briefcase className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -210,8 +211,8 @@ function RegisterForm() {
                             required
                             placeholder={
                                 selectedRole === "WHOLESALER"
-                                    ? "Apex Wholesale Distribution Ltd."
-                                    : "Rahim General Store"
+                                    ? t("businessNamePlaceholderWholesaler")
+                                    : t("businessNamePlaceholderRetailer")
                             }
                             className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
                         />
@@ -223,7 +224,7 @@ function RegisterForm() {
                         htmlFor="phone_number"
                         className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1"
                     >
-                        Contact Phone Number
+                        {t("phone")}
                     </label>
                     <div className="relative">
                         <Phone className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -232,7 +233,7 @@ function RegisterForm() {
                             name="phone_number"
                             type="tel"
                             required
-                            placeholder="+1 (555) 012-3456"
+                            placeholder={t("phonePlaceholder")}
                             className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
                         />
                     </div>
@@ -243,7 +244,7 @@ function RegisterForm() {
                         htmlFor="email"
                         className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1"
                     >
-                        Email Address
+                        {t("email")}
                     </label>
                     <div className="relative">
                         <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -253,7 +254,7 @@ function RegisterForm() {
                             type="email"
                             autoComplete="email"
                             required
-                            placeholder="orders@business.com"
+                            placeholder={t("emailPlaceholder")}
                             className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
                         />
                     </div>
@@ -264,7 +265,7 @@ function RegisterForm() {
                         htmlFor="password"
                         className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1"
                     >
-                        Password
+                        {t("password")}
                     </label>
                     <div className="relative">
                         <Lock className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -275,7 +276,7 @@ function RegisterForm() {
                             autoComplete="new-password"
                             required
                             minLength={6}
-                            placeholder="Minimum 6 characters"
+                            placeholder={t("passwordPlaceholder")}
                             className="w-full pl-9 pr-10 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 text-neutral-900 dark:text-neutral-100"
                         />
                         <button
@@ -296,31 +297,26 @@ function RegisterForm() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-3 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 text-white text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                    className="w-full mt-3 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 text-white text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
                 >
                     {isLoading ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Registering account...</span>
+                            <span>{t("creatingAccount")}</span>
                         </>
                     ) : (
-                        <span>
-                            Register as{" "}
-                            {inviteToken || selectedRole === "SHOP_OWNER"
-                                ? "Shop Owner"
-                                : "Wholesaler"}
-                        </span>
+                        <span>{t("createAccountBtn")}</span>
                     )}
                 </button>
             </form>
 
             <div className="mt-5 text-center text-xs text-neutral-500 dark:text-neutral-400">
-                Already registered?{" "}
+                {t("alreadyHaveAccount")}{" "}
                 <Link
                     href="/login"
                     className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
                 >
-                    Sign in here
+                    {t("signInBtn")}
                 </Link>
             </div>
         </div>

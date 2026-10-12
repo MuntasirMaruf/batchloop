@@ -1,0 +1,75 @@
+{
+  "common": {
+    "brand": "BatchLoop",
+    "tagline": "Modern B2B Wholesale Marketplace",
+    "signIn": "Sign In",
+    "register": "Register",
+    "signOut": "Sign Out",
+    "portal": "Go to Portal",
+    "dashboard": "Dashboard",
+    "catalog": "Catalog",
+    "orders": "Orders",
+    "loading": "Loading...",
+    "error": "An unexpected error occurred",
+    "wholesaler": "Wholesaler",
+    "shopOwner": "Shop Owner"
+  },
+  "nav": {
+    "forWholesalers": "For Wholesalers",
+    "forRetailers": "For Retail Stores",
+    "portalBadge": "Portal",
+    "language": "Language"
+  },
+  "home": {
+    "badge": "Modern B2B Wholesale Marketplace",
+    "title": "Direct Trade Between Wholesalers & Retail Stores",
+    "subtitle": "Connect with trusted suppliers, order in bulk with transparent tier pricing, and streamline delivery logistics with zero friction.",
+    "wholesalerCardTitle": "For Wholesalers",
+    "wholesalerCardDesc": "Publish catalogs, invite existing buyers with 1-click links, and manage bulk trade orders.",
+    "retailerCardTitle": "For Retail Stores",
+    "retailerCardDesc": "Join via wholesaler invite, browse locked wholesale tiers, and restock store shelves.",
+    "verifiedSuppliers": "Verified B2B Suppliers",
+    "instantInvite": "Instant Invite Auto-Connect",
+    "paymentTerms": "Custom Payment Terms"
+  },
+  "auth": {
+    "createAccount": "Create Business Account",
+    "joinNetwork": "Join the B2B wholesale network",
+    "selectBusinessType": "Select Your Business Type",
+    "supplierSubtitle": "Supplier / Distributor",
+    "retailerSubtitle": "Buyer / Retailer",
+    "invitedByWholesaler": "Invited by Wholesaler",
+    "invitedNotice": "You are registering via an invitation link. Your shop will be automatically connected upon registration.",
+    "businessName": "Business / Store Name",
+    "businessNamePlaceholderWholesaler": "Apex Wholesale Distribution Ltd.",
+    "businessNamePlaceholderRetailer": "Rahim General Store",
+    "ownerName": "Contact Person / Owner Full Name",
+    "ownerNamePlaceholder": "e.g. John Doe",
+    "email": "Business Email Address",
+    "emailPlaceholder": "orders@business.com",
+    "phone": "Phone / WhatsApp Number",
+    "phonePlaceholder": "017XXXXXXXX",
+    "password": "Password",
+    "passwordPlaceholder": "Minimum 6 characters",
+    "createAccountBtn": "Create Account & Continue",
+    "creatingAccount": "Creating account...",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "registerNow": "Register now",
+    "signInTitle": "Sign In to BatchLoop",
+    "signInSubtitle": "Access your wholesale portal and orders",
+    "signInBtn": "Sign In",
+    "signingIn": "Signing in..."
+  },
+  "portal": {
+    "welcome": "Welcome back",
+    "wholesalerPortal": "Wholesaler Portal",
+    "retailPortal": "Retail Portal",
+    "inviteBuyers": "Invite Buyers",
+    "searchProducts": "Search wholesale products..."
+  },
+  "footer": {
+    "copyright": "All rights reserved.",
+    "rights": "BatchLoop B2B Wholesale Platform"
+  }
+}

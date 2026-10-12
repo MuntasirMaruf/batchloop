@@ -1,0 +1,75 @@
+{
+  "common": {
+    "brand": "ব্যাচলুপ",
+    "tagline": "আধুনিক B2B পাইকারি মার্কেটপ্লেস",
+    "signIn": "সাইন ইন",
+    "register": "রেজিস্টার",
+    "signOut": "সাইন আউট",
+    "portal": "পোর্টাল দেখুন",
+    "dashboard": "ড্যাশবোর্ড",
+    "catalog": "ক্যাটালগ",
+    "orders": "অর্ডারসমূহ",
+    "loading": "লোড হচ্ছে...",
+    "error": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে",
+    "wholesaler": "পাইকারি বিক্রেতা",
+    "shopOwner": "খুচরা দোকানের মালিক"
+  },
+  "nav": {
+    "forWholesalers": "পাইকারি বিক্রেতাদের জন্য",
+    "forRetailers": "খুচরা দোকানের জন্য",
+    "portalBadge": "পোর্টাল",
+    "language": "ভাষা"
+  },
+  "home": {
+    "badge": "আধুনিক B2B পাইকারি মার্কেটপ্লেস",
+    "title": "পাইকারি বিক্রেতা ও খুচরা দোকানের সরাসরি বাণিজ্য",
+    "subtitle": "বিশ্বস্ত সরবরাহকারীদের সাথে যুক্ত হোন, স্বচ্ছ পাইকারি মূল্যে বাল্ক অর্ডার করুন এবং কোনো ঝামেলা ছাড়াই ডেলিভারি পরিচালনা করুন।",
+    "wholesalerCardTitle": "পাইকারি বিক্রেতাদের জন্য",
+    "wholesalerCardDesc": "ক্যাটালগ প্রকাশ করুন, এক ক্লিকে ক্রেতাদের আমন্ত্রণ জানান এবং বাল্ক ট্রেড অর্ডার পরিচালনা করুন।",
+    "retailerCardTitle": "খুচরা দোকানের জন্য",
+    "retailerCardDesc": "আমন্ত্রণপত্রের মাধ্যমে যোগ দিন, নির্ধারিত পাইকারি দর দেখুন এবং দোকানের পণ্য স্টক করুন।",
+    "verifiedSuppliers": "যাচাইকৃত B2B সরবরাহকারী",
+    "instantInvite": "তাৎক্ষণিক আমন্ত্রণ অটো-কানেক্ট",
+    "paymentTerms": "কাস্টম পেমেন্ট শর্তাবলী"
+  },
+  "auth": {
+    "createAccount": "ব্যবসায়িক অ্যাকাউন্ট তৈরি করুন",
+    "joinNetwork": "B2B পাইকারি নেটওয়ার্কে যোগ দিন",
+    "selectBusinessType": "আপনার ব্যবসার ধরন নির্বাচন করুন",
+    "supplierSubtitle": "সরবরাহকারী / পরিবেশক",
+    "retailerSubtitle": "ক্রেতা / খুচরা বিক্রেতা",
+    "invitedByWholesaler": "পাইকারি বিক্রেতা কর্তৃক আমন্ত্রিত",
+    "invitedNotice": "আপনি একটি আমন্ত্রণ লিঙ্কের মাধ্যমে নিবন্ধন করছেন। নিবন্ধনের পর আপনার দোকান স্বয়ংক্রিয়ভাবে সংযুক্ত হবে।",
+    "businessName": "ব্যবসা বা দোকানের নাম",
+    "businessNamePlaceholderWholesaler": "এপেক্স হোলসেল ডিস্ট্রিবিউশন",
+    "businessNamePlaceholderRetailer": "রহিম জেনারেল স্টোর",
+    "ownerName": "যোগাযোগ ব্যক্তি / মালিকের নাম",
+    "ownerNamePlaceholder": "যেমন: জনাব রহিম",
+    "email": "ব্যবসায়িক ইমেইল ঠিকানা",
+    "emailPlaceholder": "orders@business.com",
+    "phone": "ফোন বা হোয়াটসঅ্যাপ নম্বর",
+    "phonePlaceholder": "০১৭১XXXXXXX",
+    "password": "পাসওয়ার্ড",
+    "passwordPlaceholder": "কমপক্ষে ৬টি অক্ষর",
+    "createAccountBtn": "অ্যাকাউন্ট তৈরি করুন এবং এগিয়ে যান",
+    "creatingAccount": "অ্যাকাউন্ট তৈরি হচ্ছে...",
+    "alreadyHaveAccount": "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+    "dontHaveAccount": "কোনো অ্যাকাউন্ট নেই?",
+    "registerNow": "এখনই রেজিস্টার করুন",
+    "signInTitle": "ব্যাচলুপ-এ সাইন ইন করুন",
+    "signInSubtitle": "আপনার পাইকারি পোর্টাল ও অর্ডার অ্যাক্সেস করুন",
+    "signInBtn": "সাইন ইন করুন",
+    "signingIn": "সাইন ইন হচ্ছে..."
+  },
+  "portal": {
+    "welcome": "স্বাগতম",
+    "wholesalerPortal": "পাইকারি পোর্টাল",
+    "retailPortal": "খুচরা পোর্টাল",
+    "inviteBuyers": "ক্রেতাদের আমন্ত্রণ জানান",
+    "searchProducts": "পাইকারি পণ্য অনুসন্ধান করুন..."
+  },
+  "footer": {
+    "copyright": "সর্বস্বত্ব সংরক্ষিত।",
+    "rights": "ব্যাচলুপ B2B পাইকারি প্ল্যাটফর্ম"
+  }
+}

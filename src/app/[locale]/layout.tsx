@@ -1,0 +1,76 @@
+/**
+ * ============================================================================
+ * LOCALIZED ROOT LAYOUT: src/app/[locale]/layout.tsx
+ * ============================================================================
+ * HOW THIS WORKS:
+ * 1. DYNAMIC LOCALE PARAMETER:
+ *    Because this file is inside the '[locale]' directory, Next.js passes the
+ *    current language as an asynchronous route parameter: 'params.locale'.
+ *
+ * 2. STATIC ROUTE PRE-GENERATION:
+ *    'generateStaticParams()' tells Next.js to pre-render pages for ['en', 'bn', 'ja']
+ *    at build time, ensuring fast production performance.
+ *
+ * 3. VALIDATION & SAFETY:
+ *    If an unsupported locale is accessed (e.g. '/xyz/shop'), 'notFound()' renders
+ *    the 404 page immediately.
+ *
+ * 4. SERVER-SIDE STATIC RENDERING:
+ *    'setRequestLocale(locale)' tells next-intl which locale this server component
+ *    is rendering, enabling Static Site Generation (SSG).
+ *
+ * 5. CLIENT PROVIDER:
+ *    '<NextIntlClientProvider messages={messages} locale={locale}>' sends the
+ *    loaded translations down to all Client Components ('use client'), allowing
+ *    them to call 'useTranslations()' instantly with zero network delay.
+ *
+ * 6. HTML ACCESSIBILITY & SEO:
+ *    Renders '<html lang={locale}>' so browsers, screen readers, and Google Search
+ *    know exactly which language this page is in.
+ * ============================================================================
+ */
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+
+// Pre-render static pages for all configured locales at build time
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  // Await the route parameter in Next.js 16
+  const { locale } = await params;
+
+  // Validate that the requested locale is in our supported list
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
+  // Enable static rendering for this locale
+  setRequestLocale(locale);
+
+  // Fetch the dictionary messages for this locale on the server
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <body className="antialiased">
+        <ThemeProvider>
+          {/* Provide loaded translation messages to all client-side child components */}
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            {children}
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
