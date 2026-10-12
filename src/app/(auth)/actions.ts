@@ -12,14 +12,39 @@ export interface AuthResponse {
 }
 
 /**
- * Signs up a new user with email and password, storing their role and business
- * metadata which automatically triggers profile creation in PostgreSQL.
- * If an invite token is provided (Scenario 1), auto-links to the Wholesaler.
+ * ============================================================================
+ * SIGN UP PROCESS (STEP-BY-STEP FLOW):
+ * ============================================================================
+ * 1. USER SUBMITS (/register):
+ *    User provides business type (Role), business name, phone, email, and password.
+ * 
+ * 2. CREDENTIALS TO SUPABASE AUTH (auth.users):
+ *    supabase.auth.signUp() saves email and encrypted (hashed) password to Supabase's
+ *    vault (auth.users). It passes business_name, phone_number, and role in metadata,
+ *    and issues secure HTTP-only session cookies in the user's browser.
+ * 
+ * 3. DATABASE TRIGGER AUTO-CREATES PROFILE (public.profiles):
+ *    In the exact same millisecond, the PostgreSQL trigger `on_auth_user_created`
+ *    fires automatically, copying metadata into `public.profiles` with the same UUID.
+ * 
+ * 4. DUPLICATE ACCOUNT SAFEGUARD:
+ *    If the email already exists, returns `USER_ALREADY_EXISTS` so the UI shows
+ *    a 1-click button to sign in and resume onboarding.
+ * 
+ * 5. SCENARIO 1: INVITE LINK AUTO-CONNECTION:
+ *    If registered with ?ref=INV-xxxx, looks up invitation_tokens, validates limits,
+ *    and creates an ACTIVE connection in `connections` immediately (bypassing manual KYC).
+ * 
+ * 6. REDIRECT TO ONBOARDING (/onboarding):
+ *    Returns redirectUrl: "/onboarding". User is already authenticated and lands
+ *    directly on Step 2 of 2 (business address & category setup).
+ * ============================================================================
  */
 export async function signUpAction(formData: FormData): Promise<AuthResponse> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // Extract form fields
   const email = (formData.get("email") as string)?.trim();
   const password = formData.get("password") as string;
   const role = (formData.get("role") as UserRole) || "SHOP_OWNER";
@@ -27,6 +52,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
   const phoneNumber = (formData.get("phone_number") as string)?.trim();
   const inviteToken = (formData.get("invite_token") as string)?.trim() || null;
 
+  // 1. Basic validation
   if (!email || !password || !businessName || !phoneNumber) {
     return { error: "Please fill in all required fields." };
   }
@@ -35,7 +61,14 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     return { error: "Password must be at least 6 characters." };
   }
 
-  // 1. Sign up user via Supabase Auth with metadata
+  // 2. Sign up via Supabase Auth:
+  //    HOW DATA REACHES public.profiles WITHOUT A DIRECT INSERT CALL:
+  //    - `email` & `password` are saved into Supabase's private vault (`auth.users`).
+  //    - The `options.data` object below acts as a "metadata backpack" stored in `auth.users.raw_user_meta_data`.
+  //    - In the exact same millisecond, the PostgreSQL trigger `on_auth_user_created` fires in the database.
+  //    - The trigger function `handle_new_user()` unpacks `options.data` and executes:
+  //        INSERT INTO public.profiles (id, role, business_name, phone_number) VALUES (...)
+  //    - Doing this in PostgreSQL guarantees zero "ghost accounts" if a user closes their tab mid-registration.
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -48,6 +81,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     },
   });
 
+  // 3. Handle errors and duplicate account detection
   if (authError) {
     const errorLower = authError.message.toLowerCase();
     if (
@@ -64,7 +98,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     return { error: authError.message };
   }
 
-  // Supabase Auth identity duplicate check (when email confirmation is enabled or duplicate prevention applies)
+  // Supabase Auth duplicate check when confirmation emails are enabled or duplicate protection flags empty identities
   if (
     authData.user &&
     Array.isArray(authData.user.identities) &&
@@ -82,7 +116,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     return { error: "Failed to initialize user session." };
   }
 
-  // 2. Scenario 1: If registered with an invite link, establish instant connection
+  // 4. Scenario 1: If registered via an Invite Link (?ref=...), link to Wholesaler immediately
   if (inviteToken) {
     try {
       const { data: tokenRecord } = await supabase
@@ -99,13 +133,13 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
           tokenRecord.uses_count < tokenRecord.max_uses;
 
         if (isNotExpired && hasUsesLeft) {
-          // Initialize shop_owner stub to satisfy foreign key constraint
+          // Initialize shop_owner stub row to satisfy foreign key constraint
           await supabase.from("shop_owners").upsert({
             id: userId,
             delivery_address: "",
           });
 
-          // Create ACTIVE connection immediately
+          // Create ACTIVE connection immediately (bypasses manual KYC approval)
           await supabase.from("connections").insert({
             wholesaler_id: tokenRecord.wholesaler_id,
             shop_owner_id: userId,
@@ -115,7 +149,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
             connected_at: new Date().toISOString(),
           });
 
-          // Increment usage count
+          // Increment invitation token usage count
           await supabase
             .from("invitation_tokens")
             .update({ uses_count: tokenRecord.uses_count + 1 })
@@ -127,6 +161,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     }
   }
 
+  // 5. Send authenticated user to Step 2 (/onboarding)
   return { success: true, redirectUrl: "/onboarding" };
 }
 
@@ -212,7 +247,35 @@ export async function signOutAction(): Promise<AuthResponse> {
 }
 
 /**
- * Completes the onboarding process by storing role-specific attributes.
+ * ============================================================================
+ * ONBOARDING PROCESS (STEP-BY-STEP FLOW):
+ * ============================================================================
+ * 1. USER SUBMITS (/onboarding):
+ *    User provides operational details (Warehouse address for Wholesaler,
+ *    or Delivery address & category for Shop Owner).
+ * 
+ * 2. AUTHENTICATION VERIFICATION:
+ *    supabase.auth.getUser() reads the HTTP-only cookie to identify who is submitting.
+ * 
+ * 3. ROLE DISCOVERY:
+ *    Queries `public.profiles` using user.id to verify whether this user is a
+ *    `WHOLESALER` or a `SHOP_OWNER`.
+ * 
+ * 4. DIRECT DATABASE UPSERT (wholesalers OR shop_owners):
+ *    Unlike Step 1 (which used a database trigger), this step writes DIRECTLY from
+ *    Next.js via `supabase.from(...).upsert(...)`:
+ *    - If WHOLESALER -> writes to `public.wholesalers` table.
+ *    - If SHOP_OWNER  -> writes to `public.shop_owners` table.
+ * 
+ *    WHY UPSERT INSTEAD OF INSERT?
+ *    If a Shop Owner registered via an invite link (Scenario 1), signUpAction already
+ *    created an empty stub row. `upsert` safely updates that stub row with their actual
+ *    delivery address. If no row exists, it inserts a new one.
+ * 
+ * 5. REDIRECT TO STARTER DASHBOARD:
+ *    - Wholesalers -> redirectUrl: "/wholesaler/dashboard"
+ *    - Shop Owners -> redirectUrl: "/shop/catalog"
+ * ============================================================================
  */
 export async function completeOnboardingAction(
   formData: FormData
@@ -220,6 +283,7 @@ export async function completeOnboardingAction(
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // 1. Identify the authenticated user from session cookies
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -228,6 +292,7 @@ export async function completeOnboardingAction(
     return { error: "You must be logged in to complete onboarding." };
   }
 
+  // 2. Fetch the user's role from base profiles
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -238,6 +303,7 @@ export async function completeOnboardingAction(
     return { error: "User profile not found." };
   }
 
+  // 3A. If WHOLESALER -> Validate and save directly to `public.wholesalers`
   if (profile.role === "WHOLESALER") {
     const warehouseAddress = (
       formData.get("warehouse_address") as string
@@ -250,6 +316,7 @@ export async function completeOnboardingAction(
       return { error: "Warehouse address is required for Wholesalers." };
     }
 
+    // Direct upsert into `public.wholesalers` (Row Level Security ensures id = auth.uid())
     const { error: upsertError } = await supabase.from("wholesalers").upsert({
       id: user.id,
       warehouse_address: warehouseAddress,
@@ -264,6 +331,7 @@ export async function completeOnboardingAction(
     return { success: true, redirectUrl: "/wholesaler/dashboard" };
   }
 
+  // 3B. If SHOP_OWNER -> Validate and save directly to `public.shop_owners`
   if (profile.role === "SHOP_OWNER") {
     const deliveryAddress = (
       formData.get("delivery_address") as string
@@ -277,6 +345,7 @@ export async function completeOnboardingAction(
       return { error: "Delivery address is required for Shop Owners." };
     }
 
+    // Direct upsert into `public.shop_owners` (updates stub row if registered via invite link)
     const { error: upsertError } = await supabase.from("shop_owners").upsert({
       id: user.id,
       delivery_address: deliveryAddress,
