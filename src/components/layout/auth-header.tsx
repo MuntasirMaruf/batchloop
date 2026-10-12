@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { LanguageSwitcher } from "./language-switcher";
 
 export function AuthHeader() {
   return (
@@ -14,7 +15,10 @@ export function AuthHeader() {
           </span>
           <span>BatchLoop</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
