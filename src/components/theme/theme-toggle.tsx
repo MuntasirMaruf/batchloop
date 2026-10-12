@@ -19,7 +19,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   if (!mounted) {
     return (
       <div
-        className={`w-9 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/50 animate-pulse ${className}`}
+        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/50 animate-pulse shrink-0 ${className}`}
         aria-hidden="true"
       />
     );
@@ -33,7 +33,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       onClick={toggleTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`relative inline-flex items-center justify-center w-9 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shadow-xs cursor-pointer ${className}`}
+      className={`relative inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shadow-xs cursor-pointer shrink-0 ${className}`}
     >
       {isDark ? (
         <Sun className="w-4 h-4 text-amber-500 transition-transform duration-200 rotate-0 hover:rotate-45" />

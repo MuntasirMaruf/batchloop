@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { UserRole } from "@/types/auth";
 
 export interface AuthResponse {
@@ -244,6 +245,17 @@ export async function signOutAction(): Promise<AuthResponse> {
 
   await supabase.auth.signOut();
   return { success: true, redirectUrl: "/login" };
+}
+
+/**
+ * Server Action for direct form submission: signs out and immediately redirects to /login.
+ */
+export async function logoutAction(): Promise<void> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  await supabase.auth.signOut();
+  redirect("/login");
 }
 
 /**

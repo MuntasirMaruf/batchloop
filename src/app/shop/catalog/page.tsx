@@ -76,15 +76,15 @@ export default async function ShopCatalogPage() {
   return (
     <div className="space-y-8">
       {/* Store Profile Overview Banner */}
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300">
-              <Store className="w-8 h-8" />
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 shrink-0">
+              <Store className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                   {profile.business_name}
                 </h1>
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -92,18 +92,18 @@ export default async function ShopCatalogPage() {
                   Active Retailer
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
                 <span className="flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5 text-neutral-400" />
-                  {shopOwner?.shop_category || "General Retail"}
+                  <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span>{shopOwner?.shop_category || "General Retail"}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-neutral-400" />
-                  {shopOwner?.delivery_address || "No delivery address registered"}
+                  <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span>{shopOwner?.delivery_address || "No delivery address registered"}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-neutral-400" />
-                  {profile.phone_number}
+                  <Phone className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span>{profile.phone_number}</span>
                 </span>
               </div>
             </div>
@@ -112,7 +112,7 @@ export default async function ShopCatalogPage() {
       </div>
 
       {/* Connected Wholesalers Section */}
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
         <div>
           <h2 className="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
