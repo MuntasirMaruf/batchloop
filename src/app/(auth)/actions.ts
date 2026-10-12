@@ -364,18 +364,28 @@ export async function completeOnboardingAction(
 }
 
 /**
- * Helper to fetch the current authenticated user's profile on the server.
+ * ============================================================================
+ * HOW THE APP READS WHO IS LOGGED IN:
+ * ============================================================================
+ * 1. Reads incoming cookies from the browser request using Next.js `cookies()`.
+ * 2. `supabase.auth.getUser()` verifies and decrypts the JWT stored in that cookie.
+ *    If the cookie is missing, tampered with, or expired, `user` returns null.
+ * 3. If valid, `user.id` is extracted and used to query `public.profiles`.
+ * ============================================================================
  */
 export async function getCurrentUserProfile() {
+  // 1. Get browser cookies from request headers
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // 2. Validate token and extract authenticated user
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return null;
 
+  // 3. Query the user's business profile from the database
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
