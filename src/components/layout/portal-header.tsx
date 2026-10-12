@@ -66,7 +66,7 @@ export function PortalHeader({ profile }: PortalHeaderProps) {
           <LanguageSwitcher />
           <ThemeToggle />
 
-          <div className="text-right hidden sm:block max-w-[130px] md:max-w-[200px] truncate">
+          <div className="text-right hidden sm:block max-w-32.5 md:max-w-50 truncate">
             <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
               {profile.business_name}
             </div>

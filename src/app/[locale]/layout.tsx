@@ -32,6 +32,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 
@@ -61,10 +62,19 @@ export default async function LocaleLayout({
   // Fetch the dictionary messages for this locale on the server
   const messages = await getMessages();
 
+  // Read persisted theme preference from cookies to eliminate dark mode flicker
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("theme")?.value;
+  const isDark = themeCookie === "dark";
+
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={isDark ? "dark" : ""}
+      suppressHydrationWarning
+    >
       <body className="antialiased">
-        <ThemeProvider>
+        <ThemeProvider initialTheme={(themeCookie as any) || "system"}>
           {/* Provide loaded translation messages to all client-side child components */}
           <NextIntlClientProvider messages={messages} locale={locale}>
             {children}

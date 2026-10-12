@@ -62,6 +62,11 @@ function getServerThemeSnapshot(): ThemeMode {
   return "system";
 }
 
+function setCookieTheme(theme: ResolvedTheme) {
+  if (typeof document === "undefined") return;
+  document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 // Hook to check if component is mounted on the client
 function useIsMounted(): boolean {
   return useSyncExternalStore(
@@ -87,19 +92,37 @@ function useSystemPrefersDark(): boolean {
   );
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+  children,
+  initialTheme = "system",
+}: {
+  children: React.ReactNode;
+  initialTheme?: ThemeMode;
+}) {
   const mounted = useIsMounted();
   const theme = useSyncExternalStore(
     subscribeToTheme,
     getThemeSnapshot,
-    getServerThemeSnapshot
+    () => initialTheme
   );
   const systemDark = useSystemPrefersDark();
 
   const resolvedTheme: ResolvedTheme =
-    theme === "dark" ? "dark" : theme === "light" ? "light" : systemDark ? "dark" : "light";
+    theme === "dark"
+      ? "dark"
+      : theme === "light"
+      ? "light"
+      : mounted
+      ? systemDark
+        ? "dark"
+        : "light"
+      : initialTheme === "dark"
+      ? "dark"
+      : initialTheme === "light"
+      ? "light"
+      : "light";
 
-  // Synchronize DOM external system with resolved theme
+  // Synchronize DOM class and persisted cookie with resolved theme
   useEffect(() => {
     const root = document.documentElement;
     if (resolvedTheme === "dark") {
@@ -107,12 +130,45 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove("dark");
     }
+
+    // Persist to cookie for SSR zero-flicker on refresh and language switch
+    setCookieTheme(resolvedTheme);
   }, [resolvedTheme]);
+
+  // On initial mount, sync localStorage or OS preference to cookie immediately if not present
+  useEffect(() => {
+    if (typeof document !== "undefined" && !document.cookie.includes("theme=")) {
+      const saved = localStorage.getItem("theme");
+      const initial: ResolvedTheme =
+        saved === "dark"
+          ? "dark"
+          : saved === "light"
+          ? "light"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      setCookieTheme(initial);
+      if (initial === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    }
+  }, []);
 
   const setTheme = (newTheme: ThemeMode) => {
     try {
       localStorage.setItem("theme", newTheme);
     } catch { }
+
+    const resolved: ResolvedTheme =
+      newTheme === "dark"
+        ? "dark"
+        : newTheme === "light"
+        ? "light"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+
+    setCookieTheme(resolved);
     notifyThemeListeners();
   };
 
