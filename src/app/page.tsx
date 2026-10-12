@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUserProfile } from "./(auth)/actions";
 import { Building2, Store, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 /**
  * ============================================================================
@@ -27,6 +28,7 @@ export default async function Home() {
           </div>
 
           <div className="flex items-center gap-3 text-xs font-semibold">
+            <ThemeToggle />
             {profile ? (
               <Link
                 href={

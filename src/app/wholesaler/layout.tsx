@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentUserProfile, signOutAction } from "@/app/(auth)/actions";
 import { redirect } from "next/navigation";
 import { Building2, LogOut } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 /**
  * ============================================================================
@@ -47,7 +48,9 @@ export default async function WholesalerLayout({
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+
             <div className="text-right hidden sm:block">
               <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
                 {profile.business_name}
