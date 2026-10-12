@@ -27,10 +27,11 @@ function RegisterForm() {
 
     // Determine initial role: locked to SHOP_OWNER if invite token exists,
     // or pre-selected from ?role= query parameter (e.g., from homepage cards).
+    // Defaults to WHOLESALER if not specified.
     const resolveRole = (): UserRole => {
         if (inviteToken) return "SHOP_OWNER";
-        if (roleParam === "wholesaler") return "WHOLESALER";
-        return "SHOP_OWNER";
+        if (roleParam === "shop_owner" || roleParam === "retail") return "SHOP_OWNER";
+        return "WHOLESALER";
     };
 
     const [selectedRole, setSelectedRole] = useState<UserRole>(resolveRole);
@@ -40,7 +41,11 @@ function RegisterForm() {
     if (roleParam !== prevRoleParam) {
         setPrevRoleParam(roleParam);
         if (!inviteToken) {
-            setSelectedRole(roleParam === "wholesaler" ? "WHOLESALER" : "SHOP_OWNER");
+            setSelectedRole(
+                roleParam === "shop_owner" || roleParam === "retail"
+                    ? "SHOP_OWNER"
+                    : "WHOLESALER"
+            );
         }
     }
 
