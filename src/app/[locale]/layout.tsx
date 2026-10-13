@@ -27,6 +27,10 @@
  * 6. HTML ACCESSIBILITY & SEO:
  *    Renders '<html lang={locale}>' so browsers, screen readers, and Google Search
  *    know exactly which language this page is in.
+ *
+ * 7. [THEME SSR ZERO-FLASH ARCHITECTURE]:
+ *    Reads the persisted `theme` cookie on the server before HTML is sent,
+ *    outputting `<html class="dark">` immediately to eliminate FOUC.
  * ============================================================================
  */
 import { NextIntlClientProvider } from "next-intl";
@@ -62,18 +66,35 @@ export default async function LocaleLayout({
   // Fetch the dictionary messages for this locale on the server
   const messages = await getMessages();
 
-  // Read persisted theme preference from cookies to eliminate dark mode flicker
+  // ==========================================================================
+  // [THEME SSR PRE-RENDERING - COOKIE READ ON SERVER]
+  // Reads persisted theme preference from the HTTP request cookies.
+  // Because this executes on the server before sending HTML to the browser,
+  // we know whether the user wants light or dark mode prior to first paint!
+  // ==========================================================================
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get("theme")?.value;
   const isDark = themeCookie === "dark";
 
   return (
+    // ========================================================================
+    // [THEME SSR PRE-RENDERING - PRE-APPLIED CLASS ON <html>]
+    // If themeCookie === 'dark', we immediately output `className="dark"`.
+    // The browser parses this directly from raw HTML with ZERO JavaScript delay,
+    // avoiding the dreaded white flash (FOUC).
+    // `suppressHydrationWarning` prevents warnings if client OS preference differs.
+    // ========================================================================
     <html
       lang={locale}
       className={isDark ? "dark" : ""}
       suppressHydrationWarning
     >
       <body className="antialiased">
+        {/* ====================================================================
+            [THEME SSR PRE-RENDERING - INITIAL THEME HYDRATION]
+            Passes `initialTheme` (from server cookie) into ThemeProvider so the
+            React 19 client store hydrates matching the server HTML exactly.
+            ==================================================================== */}
         <ThemeProvider initialTheme={(themeCookie as any) || "system"}>
           {/* Provide loaded translation messages to all client-side child components */}
           <NextIntlClientProvider messages={messages} locale={locale}>

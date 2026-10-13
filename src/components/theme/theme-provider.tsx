@@ -9,12 +9,21 @@ import React, {
 
 /**
  * ============================================================================
- * GLOBAL THEME PROVIDER (React 19 & Next.js 16)
+ * [THEME ARCHITECTURE - DUAL-STORAGE PATTERN (COOKIE + LOCALSTORAGE)]
  * ============================================================================
- * Manages light / dark / system theme state across the entire BatchLoop app.
- * Persists user preference in localStorage under the 'theme' key.
- * Synchronizes with Tailwind v4 .dark class on the <html> root element.
- * Uses useSyncExternalStore for zero-cascade rendering and SSR safety.
+ * In Next.js App Router (SSR) and React 19, standard client-only theme approaches
+ * (using localStorage alone) result in a visible White Flash of Unstyled Content
+ * (FOUC) because the server cannot read localStorage before sending HTML.
+ *
+ * To solve this with 0ms flicker and zero hydration errors:
+ * 1. PERSISTENCE IN LOCALSTORAGE: Saves user manual selection ('light', 'dark', 'system')
+ *    for client-side speed and cross-tab synchronisation.
+ * 2. PERSISTENCE IN HTTP COOKIE: Whenever theme changes, writes `theme=dark` or
+ *    `theme=light` to `document.cookie` (1-year expiry). Next.js Server Components
+ *    read this cookie on incoming HTTP requests (`cookies().get('theme')`) and
+ *    pre-render `<html class="dark">` directly on the server before sending HTML to browser!
+ * 3. ZERO-CASCADE RENDERING: Uses React 18/19's `useSyncExternalStore` to subscribe
+ *    directly to browser storage events without layout shift cascades.
  * ============================================================================
  */
 
@@ -31,13 +40,18 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Listeners for in-app theme changes
+// In-memory subscriber registry for same-tab instant theme notifications
 const listeners = new Set<() => void>();
 
 function notifyThemeListeners() {
   listeners.forEach((listener) => listener());
 }
 
+// ============================================================================
+// [THEME STORAGE - CROSS-TAB SUBSCRIPTION]
+// Listens to same-window mutations (via `listeners` Set) AND cross-tab changes
+// (via window "storage" event) so all tabs stay in sync automatically.
+// ============================================================================
 function subscribeToTheme(callback: () => void) {
   listeners.add(callback);
   window.addEventListener("storage", callback);
@@ -47,6 +61,10 @@ function subscribeToTheme(callback: () => void) {
   };
 }
 
+// ============================================================================
+// [THEME STORAGE - CLIENT SNAPSHOT READER]
+// Reads active mode ('light', 'dark', or 'system') from localStorage.
+// ============================================================================
 function getThemeSnapshot(): ThemeMode {
   if (typeof window === "undefined") return "system";
   try {
@@ -54,7 +72,7 @@ function getThemeSnapshot(): ThemeMode {
     if (saved === "light" || saved === "dark" || saved === "system") {
       return saved;
     }
-  } catch { }
+  } catch {}
   return "system";
 }
 
@@ -62,21 +80,29 @@ function getServerThemeSnapshot(): ThemeMode {
   return "system";
 }
 
+// ============================================================================
+// [THEME STORAGE - COOKIE WRITER]
+// Writes resolved theme to an HTTP cookie (`theme=dark` or `theme=light`).
+// Next.js RootLayout reads this cookie on the server via `next/headers -> cookies()`.
+// ============================================================================
 function setCookieTheme(theme: ResolvedTheme) {
   if (typeof document === "undefined") return;
   document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
 }
 
-// Hook to check if component is mounted on the client
+// Hook to detect whether client hydration has completed
 function useIsMounted(): boolean {
   return useSyncExternalStore(
-    () => () => { },
+    () => () => {},
     () => true,
     () => false
   );
 }
 
-// Hook to subscribe to OS media query dark preference
+// ============================================================================
+// [THEME RESOLUTION - SYSTEM MEDIA QUERY DETECTION]
+// Listens for operating system dark mode changes via (prefers-color-scheme: dark).
+// ============================================================================
 function useSystemPrefersDark(): boolean {
   return useSyncExternalStore(
     (callback) => {
@@ -100,6 +126,8 @@ export function ThemeProvider({
   initialTheme?: ThemeMode;
 }) {
   const mounted = useIsMounted();
+
+  // Subscribes to localStorage theme changes using React 19 external store
   const theme = useSyncExternalStore(
     subscribeToTheme,
     getThemeSnapshot,
@@ -107,6 +135,13 @@ export function ThemeProvider({
   );
   const systemDark = useSystemPrefersDark();
 
+  // ==========================================================================
+  // [THEME RESOLUTION LOGIC]
+  // Resolves effective 'light' or 'dark' theme based on:
+  // 1. Explicit user selection ('dark' or 'light')
+  // 2. OS preference if user chose 'system'
+  // 3. SSR fallback passed from server cookie (`initialTheme`)
+  // ==========================================================================
   const resolvedTheme: ResolvedTheme =
     theme === "dark"
       ? "dark"
@@ -122,7 +157,11 @@ export function ThemeProvider({
       ? "light"
       : "light";
 
-  // Synchronize DOM class and persisted cookie with resolved theme
+  // ==========================================================================
+  // [THEME DOM SYNCHRONIZATION & COOKIE WRITE]
+  // 1. Adds or removes `.dark` class on <html> so Tailwind v4 dark:* styles activate
+  // 2. Writes resolvedTheme to document.cookie so subsequent page reloads stay in sync
+  // ==========================================================================
   useEffect(() => {
     const root = document.documentElement;
     if (resolvedTheme === "dark") {
@@ -131,11 +170,11 @@ export function ThemeProvider({
       root.classList.remove("dark");
     }
 
-    // Persist to cookie for SSR zero-flicker on refresh and language switch
+    // Persist to cookie for SSR zero-flicker on reload
     setCookieTheme(resolvedTheme);
   }, [resolvedTheme]);
 
-  // On initial mount, sync localStorage or OS preference to cookie immediately if not present
+  // On first mount, ensure cookie is initialized if missing
   useEffect(() => {
     if (typeof document !== "undefined" && !document.cookie.includes("theme=")) {
       const saved = localStorage.getItem("theme");
@@ -154,10 +193,14 @@ export function ThemeProvider({
     }
   }, []);
 
+  // ==========================================================================
+  // [THEME MUTATION - SET EXPLICIT THEME]
+  // Updates localStorage, writes cookie, and dispatches listener updates.
+  // ==========================================================================
   const setTheme = (newTheme: ThemeMode) => {
     try {
       localStorage.setItem("theme", newTheme);
-    } catch { }
+    } catch {}
 
     const resolved: ResolvedTheme =
       newTheme === "dark"
@@ -172,6 +215,10 @@ export function ThemeProvider({
     notifyThemeListeners();
   };
 
+  // ==========================================================================
+  // [THEME MUTATION - 1-CLICK TOGGLE (LIGHT <-> DARK)]
+  // Toggles opposite of current resolved theme when user clicks <ThemeToggle />.
+  // ==========================================================================
   const toggleTheme = () => {
     const nextTheme: ThemeMode = resolvedTheme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
@@ -192,6 +239,7 @@ export function ThemeProvider({
   );
 }
 
+// Hook for consuming theme state and actions anywhere in client components
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {

@@ -1,12 +1,27 @@
 @import "tailwindcss";
 
+/* ============================================================================
+ * [THEME TAILWIND v4 INTEGRATION]
+ * In Tailwind CSS v4, the class-based dark mode strategy is configured using
+ * `@custom-variant dark`. This directs Tailwind to generate `dark:*` utilities
+ * that activate whenever the ancestor <html> element has the `.dark` class
+ * (i.e. `&:where(.dark, .dark *)`).
+ * ============================================================================ */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================================
+ * [THEME DESIGN TOKENS - CSS VARIABLES]
+ * Light mode defaults applied at the :root level.
+ * ============================================================================ */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* ============================================================================
+ * [THEME DESIGN TOKENS - DARK OVERRIDES]
+ * When <html class="dark"> is present, these CSS variables override :root.
+ * ============================================================================ */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;

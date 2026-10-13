@@ -5,20 +5,27 @@ import { Sun, Moon } from "lucide-react";
 
 /**
  * ============================================================================
- * GLOBAL THEME TOGGLE BUTTON
+ * [THEME TOGGLE UI COMPONENT]
  * ============================================================================
  * Accessible, animated header switch for toggling between Light and Dark mode.
- * - Prevents hydration mismatch via mounted check.
- * - Accessible aria-labels and smooth icon transitions.
+ * - Consumes `useTheme()` hook from `src/components/theme/theme-provider.tsx`.
+ * - Calls `toggleTheme()`, which switches the active theme, toggles `.dark`
+ *   on the document root element, and updates both `localStorage` and `theme` cookie.
+ * - Uses `suppressHydrationWarning` to eliminate SSR/client HTML attribute mismatch.
  * ============================================================================
  */
 export function ThemeToggle({ className = "" }: { className?: string }) {
+  // ==========================================================================
+  // [THEME STATE CONSUMPTION]
+  // Reads resolvedTheme ('light' | 'dark') and toggle action from ThemeContext.
+  // ==========================================================================
   const { resolvedTheme, toggleTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   return (
     <button
       type="button"
+      // [THEME INTERACTION - ON CLICK TOGGLE]
       onClick={toggleTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
