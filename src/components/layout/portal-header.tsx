@@ -77,6 +77,10 @@ export function PortalHeader({ profile }: PortalHeaderProps) {
             )}
           </div>
 
+          {/* [LOGOUT LOCATION 2 - PORTAL TOP NAVIGATION BAR]:
+              Submits directly to `logoutAction` in `src/app/[locale]/(auth)/actions.ts`.
+              On the server, `logoutAction` calls `await supabase.auth.signOut()` (which clears
+              the `sb-<project-id>-auth-token` HTTP-only cookie via `server.ts`) and redirects to `/login`. */}
           <form action={logoutAction} className="shrink-0">
             <button
               type="submit"

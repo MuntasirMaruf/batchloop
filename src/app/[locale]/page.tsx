@@ -14,6 +14,9 @@ import { Footer } from "@/components/layout/footer";
  */
 export default async function Home() {
   const t = await getTranslations("home");
+  // [COOKIE USAGE - LANDING PAGE PERSONALIZATION]:
+  // Reads the HTTP-only cookie via `getCurrentUserProfile()` so `<HomeHeader />`
+  // can display a 1-click "Portal ->" button if the user is already logged in.
   const profile = await getCurrentUserProfile();
 
   return (

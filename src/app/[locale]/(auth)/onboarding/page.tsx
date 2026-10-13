@@ -11,6 +11,9 @@ export const dynamic = "force-dynamic";
  * - If user is NOT logged in (no cookies) -> immediately redirects to /login.
  */
 export default async function OnboardingPage() {
+    // [COOKIE USAGE - SERVER PAGE GUARD]:
+    // Calls `getCurrentUserProfile()`, which reads the incoming `sb-<project-id>-auth-token`
+    // HTTP-only cookie via `cookies()` and decrypts the JWT via `supabase.auth.getUser()`.
     const profile = await getCurrentUserProfile();
 
     if (!profile) {

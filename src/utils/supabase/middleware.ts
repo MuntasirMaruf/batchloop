@@ -47,9 +47,16 @@ export const createClient = async (request: NextRequest, response?: NextResponse
 
   const supabase = createServerClient(supabaseUrl!, supabaseKey!, {
     cookies: {
+      // [COOKIE USAGE - READ IN MIDDLEWARE]:
+      // Reads the incoming `sb-<project-id>-auth-token` HTTP-only cookie from the browser's request.
       getAll() {
         return request.cookies.getAll();
       },
+      // [COOKIE USAGE - AUTO-REFRESH WRITE IN MIDDLEWARE]:
+      // If `supabase.auth.getUser()` below detects an expired access_token JWT, Supabase uses
+      // the refresh_token to mint a new JWT and calls `setAll()` to update the cookie in both:
+      //   1) `request.cookies` (so Server Components rendering on this request see the fresh token)
+      //   2) `supabaseResponse.cookies` (sends `Set-Cookie` back to the browser to update its stored cookie)
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) =>
           request.cookies.set(name, value)
@@ -64,7 +71,9 @@ export const createClient = async (request: NextRequest, response?: NextResponse
     },
   });
 
-  // 1. Refresh auth token and identify user from request cookies
+  // [COOKIE USAGE - VERIFY & REFRESH JWT]:
+  // Reads the HTTP-only cookie via `getAll()`, verifies the JWT signature with Supabase Auth,
+  // refreshes the token via `setAll()` if expired, and returns the authenticated `user` object.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -85,7 +94,10 @@ export const createClient = async (request: NextRequest, response?: NextResponse
   const localePrefix = localeMatch ? `/${localeMatch[1]}` : "";
   const normalizedPathname = pathname.replace(/^\/(?:bn|ja|en)(?=\/|$)/, "") || "/";
 
-  // Helper to preserve refreshed cookies when issuing redirects
+  // [COOKIE USAGE - PRESERVE COOKIES ON REDIRECT]:
+  // When redirecting a user, NextResponse.redirect() creates a brand-new response object.
+  // We copy all cookies from `supabaseResponse` onto `redirectResponse` so any refreshed
+  // auth cookie is preserved and never lost during a redirect.
   const createRedirectResponse = (url: URL) => {
     const redirectResponse = NextResponse.redirect(url);
     supabaseResponse.cookies.getAll().forEach((cookie) => {
@@ -94,7 +106,8 @@ export const createClient = async (request: NextRequest, response?: NextResponse
     return redirectResponse;
   };
 
-  // Determine user role (from JWT metadata first, or fallback to profiles table)
+  // [COOKIE USAGE - EXTRACT USER ROLE FROM JWT]:
+  // Reads `role` directly from the decoded cookie JWT's `user_metadata` (or queries `public.profiles` as fallback).
   let userRole = user?.user_metadata?.role;
   if (user && !userRole) {
     const { data: profile } = await supabase

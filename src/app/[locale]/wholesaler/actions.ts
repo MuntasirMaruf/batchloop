@@ -33,9 +33,14 @@ export interface ConnectedShopRecord {
  * Retrieves profile, warehouse settings, and connected retail stores.
  */
 export async function getWholesalerDashboardData() {
+  // [COOKIE USAGE - READ SESSION IN SERVER ACTION]:
+  // Reads the `sb-<project-id>-auth-token` HTTP-only cookie from the browser request
+  // and passes its JWT to Supabase so all subsequent `.from(...)` queries pass RLS checks.
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // [COOKIE USAGE - EXTRACT USER ID]:
+  // Decrypts and validates the JWT stored in the cookie to identify the logged-in wholesaler.
   const {
     data: { user },
   } = await supabase.auth.getUser();

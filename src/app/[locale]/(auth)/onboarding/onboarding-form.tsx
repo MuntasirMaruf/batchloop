@@ -40,6 +40,9 @@ export function OnboardingForm({ profile }: OnboardingFormProps) {
 
   const isWholesaler = profile.role === "WHOLESALER";
 
+  // [LOGOUT LOCATION 1 - "SIGN OUT AND FINISH LATER" ON /onboarding]:
+  // Calls `signOutAction()` in `actions.ts`, which runs `await supabase.auth.signOut()`
+  // to revoke the session and delete the HTTP-only cookie (`Max-Age=0`), then routes to `/login`.
   async function handleSignOut() {
     setIsSigningOut(true);
     await signOutAction();
@@ -52,8 +55,13 @@ export function OnboardingForm({ profile }: OnboardingFormProps) {
     setError(null);
     setIsLoading(true);
 
+    // [TAKING DATA FROM USER]:
+    // Collects role-specific inputs (`warehouse_address` or `delivery_address` & `shop_category`) into FormData.
     const formData = new FormData(e.currentTarget);
     try {
+      // [SENDING DATA TO SERVER ACTION (AUTHENTICATED BY HTTP-ONLY COOKIE)]:
+      // `completeOnboardingAction` reads the user's HTTP-only cookie to identify `user.id`
+      // and uses its JWT to upsert `public.wholesalers` or `public.shop_owners` under RLS.
       const result = await completeOnboardingAction(formData);
 
       if (result.error) {

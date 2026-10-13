@@ -18,14 +18,20 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
+    // [TAKING DATA FROM USER]:
+    // Packages the <input name="email"> and <input name="password"> fields into FormData.
     const formData = new FormData(e.currentTarget);
     try {
+      // [SENDING DATA TO SERVER ACTION & RECEIVING HTTP-ONLY COOKIE]:
+      // Calls `signInAction(formData)` on the server, which verifies credentials with Supabase Auth
+      // and initializes the `sb-<project-id>-auth-token` HTTP-only cookie in the browser.
       const result = await signInAction(formData);
 
       if (result.error) {
         setError(result.error);
         setIsLoading(false);
       } else if (result.redirectUrl) {
+        // Navigate to `/onboarding`, `/wholesaler/dashboard`, or `/shop/catalog` and refresh with the new cookie
         router.push(result.redirectUrl);
         router.refresh();
       }

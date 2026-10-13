@@ -42,10 +42,14 @@ export interface AuthResponse {
  * ============================================================================
  */
 export async function signUpAction(formData: FormData): Promise<AuthResponse> {
+  // [COOKIE INITIALIZATION - STEP 1]:
+  // Grab Next.js's server-side cookie store for the current HTTP request
+  // and connect it to our Supabase Server Client (`src/utils/supabase/server.ts`).
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // Extract form fields
+  // [TAKING DATA FROM USER]:
+  // Extract the named fields packaged into FormData by `register/page.tsx`.
   const email = (formData.get("email") as string)?.trim();
   const password = formData.get("password") as string;
   const role = (formData.get("role") as UserRole) || "SHOP_OWNER";
@@ -62,14 +66,15 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     return { error: "Password must be at least 6 characters." };
   }
 
-  // 2. Sign up via Supabase Auth:
-  //    HOW DATA REACHES public.profiles WITHOUT A DIRECT INSERT CALL:
-  //    - `email` & `password` are saved into Supabase's private vault (`auth.users`).
-  //    - The `options.data` object below acts as a "metadata backpack" stored in `auth.users.raw_user_meta_data`.
-  //    - In the exact same millisecond, the PostgreSQL trigger `on_auth_user_created` fires in the database.
-  //    - The trigger function `handle_new_user()` unpacks `options.data` and executes:
-  //        INSERT INTO public.profiles (id, role, business_name, phone_number) VALUES (...)
-  //    - Doing this in PostgreSQL guarantees zero "ghost accounts" if a user closes their tab mid-registration.
+  // [SENDING DATA TO SUPABASE & INITIALIZING HTTP-ONLY COOKIE - STEP 2]:
+  // 1. Sends `email` and `password` to Supabase Auth (`auth.users`).
+  // 2. Sends `role`, `business_name`, and `phone_number` inside `options.data` (`raw_user_meta_data`),
+  //    which immediately fires the PostgreSQL trigger `on_auth_user_created` (`handle_new_user()`)
+  //    to insert a matching row into `public.profiles`.
+  // 3. [COOKIE INITIALIZED HERE]: When `signUp()` succeeds, Supabase returns a JWT session
+  //    (`access_token` + `refresh_token`). Internally, `@supabase/ssr` immediately invokes
+  //    `cookies.setAll()` in `src/utils/supabase/server.ts`, which calls `cookieStore.set()`
+  //    to write the `sb-<project-id>-auth-token` HTTP-only cookie to the user's browser!
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -117,7 +122,8 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     return { error: "Failed to initialize user session." };
   }
 
-  // 4. Scenario 1: If registered via an Invite Link (?ref=...), link to Wholesaler immediately
+  // 4. [INVITATION LINK BACKEND HANDLING (Scenario 1: ?ref=INV-xxxx)]:
+  //    Note: The queries below automatically use the newly initialized session JWT!
   if (inviteToken) {
     try {
       const { data: tokenRecord } = await supabase
@@ -134,7 +140,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
           tokenRecord.uses_count < tokenRecord.max_uses;
 
         if (isNotExpired && hasUsesLeft) {
-          // Initialize shop_owner stub row to satisfy foreign key constraint
+          // Initialize shop_owner stub row to satisfy foreign key constraint (`connections.shop_owner_id -> shop_owners.id`)
           await supabase.from("shop_owners").upsert({
             id: userId,
             delivery_address: "",
@@ -162,7 +168,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
     }
   }
 
-  // 5. Send authenticated user to Step 2 (/onboarding)
+  // 5. Send authenticated user (now holding the HTTP-only cookie) to Step 2 (/onboarding)
   return { success: true, redirectUrl: "/onboarding" };
 }
 
@@ -170,9 +176,13 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
  * Signs in a user and redirects them according to their role and profile completeness.
  */
 export async function signInAction(formData: FormData): Promise<AuthResponse> {
+  // [COOKIE INITIALIZATION - STEP 1]:
+  // Grab Next.js's server-side cookie store and connect it to `src/utils/supabase/server.ts`.
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // [TAKING DATA FROM USER]:
+  // Extract email and password submitted by `login/page.tsx`.
   const email = (formData.get("email") as string)?.trim();
   const password = formData.get("password") as string;
 
@@ -180,6 +190,12 @@ export async function signInAction(formData: FormData): Promise<AuthResponse> {
     return { error: "Please enter your email and password." };
   }
 
+  // [SENDING DATA TO SUPABASE & INITIALIZING HTTP-ONLY COOKIE - STEP 2]:
+  // Verifies email & password against `auth.users`.
+  // [COOKIE INITIALIZED HERE]: When `signInWithPassword()` succeeds, Supabase returns a fresh
+  // JWT session (`access_token` + `refresh_token`). Internally, `@supabase/ssr` immediately calls
+  // `cookies.setAll()` in `src/utils/supabase/server.ts`, which executes `cookieStore.set()`
+  // to write the `sb-<project-id>-auth-token` HTTP-only cookie to the user's browser!
   const { data: authData, error: authError } =
     await supabase.auth.signInWithPassword({
       email,
@@ -195,7 +211,7 @@ export async function signInAction(formData: FormData): Promise<AuthResponse> {
     return { error: "User session not found." };
   }
 
-  // Fetch user role from profiles
+  // Fetch user role from profiles (authenticated using the newly initialized session)
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -237,23 +253,33 @@ export async function signInAction(formData: FormData): Promise<AuthResponse> {
 }
 
 /**
- * Signs out the current user and clears session cookies.
+ * [LOGOUT METHOD 1 - CLIENT HANDLER]:
+ * Called by `handleSignOut()` in `src/app/[locale]/(auth)/onboarding/onboarding-form.tsx`
+ * when the user clicks "Sign out and finish later".
  */
 export async function signOutAction(): Promise<AuthResponse> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // [COOKIE DELETION / CLEARING]:
+  // Revokes the session in Supabase Auth AND triggers `cookies.setAll()` in `server.ts`
+  // with an empty value and `Max-Age=0`, deleting the `sb-<project-id>-auth-token` cookie from the browser.
   await supabase.auth.signOut();
   return { success: true, redirectUrl: "/login" };
 }
 
 /**
- * Server Action for direct form submission: signs out and immediately redirects to /login.
+ * [LOGOUT METHOD 2 - SERVER FORM ACTION]:
+ * Called by `<form action={logoutAction}>` in `src/components/layout/portal-header.tsx`
+ * when a Wholesaler or Shop Owner clicks "Sign Out" in the top navigation bar.
  */
 export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // [COOKIE DELETION / CLEARING]:
+  // Revokes the session in Supabase Auth AND triggers `cookies.setAll()` in `server.ts`
+  // with `Max-Age=0` to delete the HTTP-only cookie from the browser, then redirects to `/login`.
   await supabase.auth.signOut();
   redirect("/login");
 }
@@ -292,10 +318,13 @@ export async function logoutAction(): Promise<void> {
 export async function completeOnboardingAction(
   formData: FormData
 ): Promise<AuthResponse> {
+  // [COOKIE USAGE - READ SESSION IN SERVER ACTION]:
+  // Connect Next.js `cookies()` to `server.ts` so `cookieStore.getAll()` reads the browser's auth cookie.
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 1. Identify the authenticated user from session cookies
+  // [COOKIE USAGE - IDENTIFY LOGGED-IN USER]:
+  // Decrypts and verifies the JWT stored in the `sb-<project-id>-auth-token` cookie to get `user.id`.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -328,7 +357,9 @@ export async function completeOnboardingAction(
       return { error: "Warehouse address is required for Wholesalers." };
     }
 
-    // Direct upsert into `public.wholesalers` (Row Level Security ensures id = auth.uid())
+    // [COOKIE USAGE - AUTHORIZE DATABASE WRITE WITH RLS]:
+    // `@supabase/ssr` automatically attaches the cookie's JWT in `Authorization: Bearer <jwt>`
+    // so PostgreSQL Row Level Security (`WITH CHECK (auth.uid() = id)`) permits this upsert!
     const { error: upsertError } = await supabase.from("wholesalers").upsert({
       id: user.id,
       warehouse_address: warehouseAddress,
@@ -357,7 +388,9 @@ export async function completeOnboardingAction(
       return { error: "Delivery address is required for Shop Owners." };
     }
 
-    // Direct upsert into `public.shop_owners` (updates stub row if registered via invite link)
+    // [COOKIE USAGE - AUTHORIZE DATABASE WRITE WITH RLS]:
+    // Forwards the cookie's JWT to PostgreSQL RLS (`auth.uid() = id`) and updates the stub row
+    // if the shop owner registered via a Scenario 1 invite link.
     const { error: upsertError } = await supabase.from("shop_owners").upsert({
       id: user.id,
       delivery_address: deliveryAddress,
@@ -377,27 +410,31 @@ export async function completeOnboardingAction(
 
 /**
  * ============================================================================
- * HOW THE APP READS WHO IS LOGGED IN:
+ * HOW THE APP READS WHO IS LOGGED IN (SERVER COMPONENT HELPER):
  * ============================================================================
- * 1. Reads incoming cookies from the browser request using Next.js `cookies()`.
- * 2. `supabase.auth.getUser()` verifies and decrypts the JWT stored in that cookie.
- *    If the cookie is missing, tampered with, or expired, `user` returns null.
- * 3. If valid, `user.id` is extracted and used to query `public.profiles`.
+ * Used across:
+ *   1. `src/app/[locale]/page.tsx` (Landing page)
+ *   2. `src/app/[locale]/(auth)/onboarding/page.tsx` (Onboarding route guard)
+ *   3. `src/app/[locale]/wholesaler/layout.tsx` (Wholesaler portal layout)
+ *   4. `src/app/[locale]/shop/layout.tsx` (Shop Owner portal layout)
  * ============================================================================
  */
 export async function getCurrentUserProfile() {
-  // 1. Get browser cookies from request headers
+  // [COOKIE USAGE - STEP 1: READ BROWSER REQUEST COOKIES]:
+  // Reads incoming HTTP-only cookies from the browser request headers via `cookieStore.getAll()`.
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 2. Validate token and extract authenticated user
+  // [COOKIE USAGE - STEP 2: DECRYPT & VERIFY JWT]:
+  // Validates the JWT inside `sb-<project-id>-auth-token`. Returns `null` if missing or expired.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return null;
 
-  // 3. Query the user's business profile from the database
+  // [COOKIE USAGE - STEP 3: QUERY PROFILE USING COOKIE USER ID]:
+  // Uses `user.id` extracted from the cookie JWT to fetch the user's business profile.
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

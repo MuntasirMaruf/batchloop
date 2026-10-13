@@ -15,6 +15,8 @@ export default async function ShopLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // [COOKIE USAGE - SERVER LAYOUT GUARD]:
+  // Reads the HTTP-only cookie via `getCurrentUserProfile()` to verify the user is an authenticated SHOP_OWNER.
   const profile = await getCurrentUserProfile();
 
   // Defense in depth: Verify authenticated shop owner

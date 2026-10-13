@@ -15,6 +15,8 @@ export default async function WholesalerLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // [COOKIE USAGE - SERVER LAYOUT GUARD]:
+  // Reads the HTTP-only cookie via `getCurrentUserProfile()` to verify the user is an authenticated WHOLESALER.
   const profile = await getCurrentUserProfile();
 
   // Defense in depth: Verify authenticated wholesaler

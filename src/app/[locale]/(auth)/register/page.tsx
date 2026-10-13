@@ -24,9 +24,12 @@ function RegisterForm() {
     const t = useTranslations("auth");
     const router = useRouter();
     const searchParams = useSearchParams();
+    // [INVITATION LINK DETECTION (?ref=INV-xxxx)]:
+    // Extracts the invite token from the URL query string if the user opened a wholesaler's invite link.
     const inviteToken = searchParams.get("ref");
     const roleParam = searchParams.get("role")?.toLowerCase();
 
+    // [ROLE LOCKING ON INVITE LINK]:
     // Determine initial role: locked to SHOP_OWNER if invite token exists,
     // or pre-selected from ?role= query parameter (e.g., from homepage cards).
     // Defaults to WHOLESALER if not specified.
@@ -62,8 +65,14 @@ function RegisterForm() {
         setIsExistingUser(false);
         setIsLoading(true);
 
+        // [TAKING DATA FROM USER]:
+        // Collects all <input name="..."> fields from the form DOM (role, invite_token,
+        // business_name, phone_number, email, password) into a standard FormData object.
         const formData = new FormData(e.currentTarget);
         try {
+            // [SENDING DATA TO SERVER ACTION & RECEIVING HTTP-ONLY COOKIE]:
+            // Calls `signUpAction(formData)` on the server, which registers the user in Supabase,
+            // initializes the `sb-<project-id>-auth-token` HTTP-only cookie, and links any invite token.
             const result = await signUpAction(formData);
 
             if (result.error) {
@@ -71,6 +80,7 @@ function RegisterForm() {
                 setIsExistingUser(result.errorCode === "USER_ALREADY_EXISTS");
                 setIsLoading(false);
             } else if (result.redirectUrl) {
+                // Navigate to `/onboarding` and refresh Server Components so they read the new auth cookie
                 router.push(result.redirectUrl);
                 router.refresh();
             }
