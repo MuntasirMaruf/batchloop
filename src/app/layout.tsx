@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/config";
+import { cookies } from "next/headers";
+import { siteConfig, cookieConfig } from "@/config";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,10 +10,27 @@ export const metadata: Metadata = {
   keywords: [...siteConfig.metadata.keywords],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get(cookieConfig.theme)?.value;
+  const isDark = themeCookie === "dark";
+  const localeCookie = cookieStore.get(cookieConfig.locale)?.value || "en";
+
+  return (
+    <html
+      lang={localeCookie}
+      className={isDark ? "dark" : ""}
+      suppressHydrationWarning
+    >
+      <body className="antialiased">
+        <ThemeProvider initialTheme={(themeCookie as any) || "system"}>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }
