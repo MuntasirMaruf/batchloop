@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Architecture & Developer Guidelines
+
+- **[Frontend Design & Configuration Guideline](file:///d:/Projects/WebDevelopment/BatchLoop/batchloop/FRONTEND_DESIGN_GUIDELINE.md)**: Color profiles, typography scales, radii rules, and component recipes.
+- **[Internationalization (i18n) Guide](file:///d:/Projects/WebDevelopment/BatchLoop/batchloop/I18N_GUIDE.md)**: Routing strategy, translation workflow for English, Bengali, and Japanese.
+- **[Vercel Deployment Guide](file:///d:/Projects/WebDevelopment/BatchLoop/batchloop/VERCEL_DEPLOYMENT_GUIDE.md)**: Production deployment instructions.
+
 ## Getting Started
 
 First, run the development server:

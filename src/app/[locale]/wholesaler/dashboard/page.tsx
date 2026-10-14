@@ -37,18 +37,18 @@ export default async function WholesalerDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Welcome & KPI Header */}
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs">
+      <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="p-2.5 sm:p-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 shrink-0">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-wholesaler-subtle border border-wholesaler-border text-wholesaler shrink-0">
               <Building2 className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                   {profile.business_name}
                 </h1>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-retailer-subtle text-retailer border border-retailer-border">
                   <ShieldCheck className="w-3 h-3" />
                   Verified Supplier
                 </span>

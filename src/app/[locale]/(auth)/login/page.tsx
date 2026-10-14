@@ -5,6 +5,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { signInAction } from "../actions";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { routes } from "@/config";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -90,7 +91,7 @@ export default function LoginPage() {
               {t("password")}
             </label>
             <Link
-              href="/forgot-password"
+              href={routes.auth.forgotPassword}
               className="text-xs text-neutral-600 dark:text-neutral-400 hover:underline"
             >
               Forgot password?
@@ -125,7 +126,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-2 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 dark:text-neutral-900 text-white text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+          className="w-full mt-2 py-2.5 px-4 bg-primary text-primary-foreground hover:opacity-90 text-sm font-semibold rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
         >
           {isLoading ? (
             <>
@@ -141,7 +142,7 @@ export default function LoginPage() {
       <div className="mt-6 text-center text-xs text-neutral-500 dark:text-neutral-400">
         {t("dontHaveAccount")}{" "}
         <Link
-          href="/register"
+          href={routes.auth.register}
           className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
         >
           {t("registerNow")}

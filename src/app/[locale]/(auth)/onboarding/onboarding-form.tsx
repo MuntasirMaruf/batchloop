@@ -17,20 +17,13 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { businessConfig } from "@/config";
+
 interface OnboardingFormProps {
   profile: UserProfile;
 }
 
-const SHOP_CATEGORIES = [
-  "Grocery & Supermarket",
-  "Pharmacy & Healthcare",
-  "Consumer Electronics",
-  "Fashion & Apparel",
-  "Hardware & Construction",
-  "Stationery & Books",
-  "Cosmetics & Personal Care",
-  "General Retail",
-];
+const SHOP_CATEGORIES = businessConfig.shopCategories;
 
 export function OnboardingForm({ profile }: OnboardingFormProps) {
   const router = useRouter();

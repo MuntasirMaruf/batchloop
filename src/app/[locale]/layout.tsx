@@ -39,6 +39,7 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { cookieConfig } from "@/config";
 
 // Pre-render static pages for all configured locales at build time
 export function generateStaticParams() {
@@ -73,7 +74,7 @@ export default async function LocaleLayout({
   // we know whether the user wants light or dark mode prior to first paint!
   // ==========================================================================
   const cookieStore = await cookies();
-  const themeCookie = cookieStore.get("theme")?.value;
+  const themeCookie = cookieStore.get(cookieConfig.theme)?.value;
   const isDark = themeCookie === "dark";
 
   return (

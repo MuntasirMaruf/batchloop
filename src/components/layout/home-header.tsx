@@ -4,6 +4,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ArrowRight } from "lucide-react";
 import { UserRole } from "@/types/auth";
 import { useTranslations } from "next-intl";
+import { siteConfig, routes, roleRedirects } from "@/config";
 
 /**
  * ============================================================================
@@ -25,16 +26,16 @@ export function HomeHeader({ profile }: HomeHeaderProps) {
   const t = useTranslations("common");
 
   return (
-    <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm sticky top-0 z-40">
+    <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-1.5 sm:gap-2">
         <Link
-          href="/"
-          className="flex items-center gap-1.5 sm:gap-2 font-black text-sm sm:text-lg tracking-tight shrink-0"
+          href={routes.public.home}
+          className="flex items-center gap-1.5 sm:gap-2 font-black text-sm sm:text-lg tracking-tight shrink-0 text-foreground"
         >
-          <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex items-center justify-center font-black text-xs sm:text-sm shrink-0">
-            BL
+          <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-black text-xs sm:text-sm shrink-0">
+            {siteConfig.shortName}
           </span>
-          <span className="inline">BatchLoop</span>
+          <span className="inline">{siteConfig.name}</span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2.5 text-xs font-semibold shrink-0">
@@ -42,12 +43,8 @@ export function HomeHeader({ profile }: HomeHeaderProps) {
           <ThemeToggle />
           {profile ? (
             <Link
-              href={
-                profile.role === "WHOLESALER"
-                  ? "/wholesaler/dashboard"
-                  : "/shop/catalog"
-              }
-              className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 transition-opacity whitespace-nowrap text-xs"
+              href={roleRedirects[profile.role] || routes.wholesaler.dashboard}
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap text-xs"
             >
               <span>{t("portal")}</span>
               <ArrowRight className="w-3.5 h-3.5 shrink-0" />
@@ -55,14 +52,14 @@ export function HomeHeader({ profile }: HomeHeaderProps) {
           ) : (
             <>
               <Link
-                href="/login"
-                className="px-2 sm:px-3 py-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors whitespace-nowrap text-xs"
+                href={routes.auth.login}
+                className="px-2 sm:px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap text-xs"
               >
                 {t("signIn")}
               </Link>
               <Link
-                href="/register"
-                className="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 transition-opacity whitespace-nowrap text-xs"
+                href={routes.auth.register}
+                className="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap text-xs"
               >
                 {t("register")}
               </Link>

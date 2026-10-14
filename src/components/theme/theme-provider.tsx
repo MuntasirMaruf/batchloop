@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useSyncExternalStore,
 } from "react";
+import { cookieConfig, themeConfig } from "@/config";
 
 /**
  * ============================================================================
@@ -66,18 +67,18 @@ function subscribeToTheme(callback: () => void) {
 // Reads active mode ('light', 'dark', or 'system') from localStorage.
 // ============================================================================
 function getThemeSnapshot(): ThemeMode {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return themeConfig.defaultTheme;
   try {
-    const saved = localStorage.getItem("theme");
+    const saved = localStorage.getItem(cookieConfig.theme);
     if (saved === "light" || saved === "dark" || saved === "system") {
       return saved;
     }
   } catch {}
-  return "system";
+  return themeConfig.defaultTheme;
 }
 
 function getServerThemeSnapshot(): ThemeMode {
-  return "system";
+  return themeConfig.defaultTheme;
 }
 
 // ============================================================================
@@ -87,7 +88,7 @@ function getServerThemeSnapshot(): ThemeMode {
 // ============================================================================
 function setCookieTheme(theme: ResolvedTheme) {
   if (typeof document === "undefined") return;
-  document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+  document.cookie = `${cookieConfig.theme}=${theme}; path=${cookieConfig.path}; max-age=${cookieConfig.maxAge}; SameSite=${cookieConfig.sameSite}`;
 }
 
 // Hook to detect whether client hydration has completed
@@ -176,8 +177,8 @@ export function ThemeProvider({
 
   // On first mount, ensure cookie is initialized if missing
   useEffect(() => {
-    if (typeof document !== "undefined" && !document.cookie.includes("theme=")) {
-      const saved = localStorage.getItem("theme");
+    if (typeof document !== "undefined" && !document.cookie.includes(`${cookieConfig.theme}=`)) {
+      const saved = localStorage.getItem(cookieConfig.theme);
       const initial: ResolvedTheme =
         saved === "dark"
           ? "dark"
@@ -199,7 +200,7 @@ export function ThemeProvider({
   // ==========================================================================
   const setTheme = (newTheme: ThemeMode) => {
     try {
-      localStorage.setItem("theme", newTheme);
+      localStorage.setItem(cookieConfig.theme, newTheme);
     } catch {}
 
     const resolved: ResolvedTheme =

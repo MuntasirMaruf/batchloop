@@ -19,6 +19,7 @@ import {
     AlertCircle,
     Link as LinkIcon,
 } from "lucide-react";
+import { routes } from "@/config";
 
 function RegisterForm() {
     const t = useTranslations("auth");
@@ -323,7 +324,7 @@ function RegisterForm() {
             <div className="mt-5 text-center text-xs text-neutral-500 dark:text-neutral-400">
                 {t("alreadyHaveAccount")}{" "}
                 <Link
-                    href="/login"
+                    href={routes.auth.login}
                     className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
                 >
                     {t("signInBtn")}

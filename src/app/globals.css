@@ -2,40 +2,160 @@
 
 /* ============================================================================
  * [THEME TAILWIND v4 INTEGRATION]
- * In Tailwind CSS v4, the class-based dark mode strategy is configured using
- * `@custom-variant dark`. This directs Tailwind to generate `dark:*` utilities
- * that activate whenever the ancestor <html> element has the `.dark` class
- * (i.e. `&:where(.dark, .dark *)`).
+ * Directs Tailwind to generate `dark:*` utilities whenever <html> has `.dark`.
  * ============================================================================ */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================================
- * [THEME DESIGN TOKENS - CSS VARIABLES]
- * Light mode defaults applied at the :root level.
+ * [THEME DESIGN TOKENS - LIGHT MODE (MATCHING SCREENSHOT)]
+ * - Canvas: Clean #fafafa (Neutral 50)
+ * - Cards: Pure White #ffffff
+ * - Foreground: High contrast #171717 (Neutral 900)
+ * - Border: #e5e5e5 (Neutral 200)
+ * - Role Accents: Blue (#2563eb / #eff6ff), Emerald (#059669 / #ecfdf5)
  * ============================================================================ */
 :root {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #171717;
+
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+
+  --muted: rgba(229, 229, 229, 0.8);
+  --muted-foreground: #525252;
+  --muted-subtle: #737373;
+
+  --border: #e5e5e5;
+  --border-hover: #a3a3a3;
+  --border-subtle: #f5f5f5;
+  --input: #e5e5e5;
+  --ring: #171717;
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --info: #0284c7;
+
+  --wholesaler: #2563eb;
+  --wholesaler-subtle: #eff6ff;
+  --wholesaler-border: #bfdbfe;
+  --wholesaler-text: #1d4ed8;
+
+  --retailer: #059669;
+  --retailer-subtle: #ecfdf5;
+  --retailer-border: #a7f3d0;
+  --retailer-text: #047857;
+
+  --accent-purple: #9333ea;
 }
 
 /* ============================================================================
- * [THEME DESIGN TOKENS - DARK OVERRIDES]
- * When <html class="dark"> is present, these CSS variables override :root.
+ * [THEME DESIGN TOKENS - DARK MODE (MATCHING SCREENSHOT)]
+ * - Canvas: Deep pitch black #0a0a0a (Neutral 950)
+ * - Cards: Elevated #171717 (Neutral 900)
+ * - Foreground: High contrast #ededed (Neutral 100)
+ * - Border: #262626 (Neutral 800)
+ * - Role Accents: Blue (#60a5fa / rgba(23,37,84,0.6)), Emerald (#34d399 / rgba(2,44,34,0.6))
  * ============================================================================ */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+
+  --card: #171717;
+  --card-foreground: #ededed;
+  --popover: #171717;
+  --popover-foreground: #ededed;
+
+  --primary: #ededed;
+  --primary-foreground: #171717;
+  --secondary: #262626;
+  --secondary-foreground: #ededed;
+
+  --muted: rgba(38, 38, 38, 0.8);
+  --muted-foreground: #a3a3a3;
+  --muted-subtle: #737373;
+
+  --border: #262626;
+  --border-hover: #525252;
+  --border-subtle: #1f1f1f;
+  --input: #262626;
+  --ring: #ededed;
+
+  --success: #34d399;
+  --warning: #fbbf24;
+  --destructive: #f87171;
+  --info: #38bdf8;
+
+  --wholesaler: #60a5fa;
+  --wholesaler-subtle: rgba(23, 37, 84, 0.6);
+  --wholesaler-border: #1e3a8a;
+  --wholesaler-text: #93c5fd;
+
+  --retailer: #34d399;
+  --retailer-subtle: rgba(2, 44, 34, 0.6);
+  --retailer-border: #065f46;
+  --retailer-text: #6ee7b7;
+
+  --accent-purple: #c084fc;
 }
 
+/* ============================================================================
+ * [TAILWIND v4 @theme DECLARATION]
+ * Exposes design tokens as first-class utility classes in Tailwind.
+ * ============================================================================ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-subtle: var(--muted-subtle);
+
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-info: var(--info);
+
+  --color-wholesaler: var(--wholesaler);
+  --color-wholesaler-subtle: var(--wholesaler-subtle);
+  --color-wholesaler-border: var(--wholesaler-border);
+  --color-wholesaler-text: var(--wholesaler-text);
+
+  --color-retailer: var(--retailer);
+  --color-retailer-subtle: var(--retailer-subtle);
+  --color-retailer-border: var(--retailer-border);
+  --color-retailer-text: var(--retailer-text);
+
+  --color-accent-purple: var(--accent-purple);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition:
