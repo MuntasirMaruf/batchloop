@@ -1,4 +1,4 @@
-export type UserRole = "WHOLESALER" | "SHOP_OWNER" | "ADMIN";
+export type UserRole = "WHOLESALER" | "RETAILER" | "USER" | "ADMIN" | "SHOP_OWNER";
 
 export type ConnectionStatus =
   | "PENDING_REVIEW"
@@ -37,9 +37,12 @@ export interface WholesalerProfile {
   accepted_payment_terms: PaymentTerms[];
 }
 
-export interface ShopOwnerProfile {
+export interface RetailerProfile {
   id: string;
   trade_license_number: string | null;
   delivery_address: string;
   shop_category: string | null;
 }
+
+// Backwards-compatibility alias
+export type ShopOwnerProfile = RetailerProfile;

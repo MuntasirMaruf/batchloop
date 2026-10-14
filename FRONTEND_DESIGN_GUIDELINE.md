@@ -12,7 +12,7 @@ BatchLoop uses a signature **monochrome base with purposeful domain role accents
 - **Light Mode**: Clean soft canvas (`#fafafa`), pure white cards (`#ffffff`), crisp dark text (`#171717`), and subtle borders (`#e5e5e5`).
 - **Domain Accents**:
   - **Wholesaler (B2B Supply)**: Royal Blue (`#2563eb` light / `#60a5fa` dark)
-  - **Retailer (Shop Owner)**: Commerce Emerald (`#059669` light / `#34d399` dark)
+  - **Retailer**: Commerce Emerald (`#059669` light / `#34d399` dark)
   - **Platform & System**: Violet / Purple (`#9333ea` light / `#c084fc` dark)
 - **Typography**: Clean, bold, punchy `Arial, Helvetica, sans-serif` for instant native rendering with zero layout shift.
 

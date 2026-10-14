@@ -10,9 +10,9 @@
  * 2. ROLE-BASED ACCESS CONTROL (RBAC):
  *    - /wholesaler/*: Restricted to authenticated users with role === 'WHOLESALER'.
  *      - If logged out -> Redirects to /login?redirectTo=...
- *      - If Shop Owner -> Redirects to /shop/catalog (prevents cross-portal access).
+ *      - If Retailer -> Redirects to /shop/catalog (prevents cross-portal access).
  * 
- *    - /shop/*: Restricted to authenticated users with role === 'SHOP_OWNER'.
+ *    - /shop/*: Restricted to authenticated users with role === 'RETAILER'.
  *      - If logged out -> Redirects to /login?redirectTo=...
  *      - If Wholesaler -> Redirects to /wholesaler/dashboard.
  * 
@@ -129,14 +129,15 @@ export const createClient = async (request: NextRequest, response?: NextResponse
       return createRedirectResponse(loginUrl);
     }
 
-    // If logged in as Shop Owner -> block access and redirect to Shop Catalog
-    if (userRole === "SHOP_OWNER") {
-      return createRedirectResponse(new URL(`${localePrefix}/shop/catalog`, request.url));
+    // If not a Wholesaler -> block access
+    if (userRole !== "WHOLESALER") {
+      const target = (userRole === "RETAILER" || userRole === "SHOP_OWNER") ? `${localePrefix}/shop/catalog` : `${localePrefix}/`;
+      return createRedirectResponse(new URL(target, request.url));
     }
   }
 
   // ==========================================================================
-  // ROUTE GUARD 2: Shop Owner Portal (/shop/*)
+  // ROUTE GUARD 2: Retailer Portal (/shop/*)
   // ==========================================================================
   if (normalizedPathname.startsWith("/shop")) {
     // If not logged in -> redirect to login with return path
@@ -146,9 +147,10 @@ export const createClient = async (request: NextRequest, response?: NextResponse
       return createRedirectResponse(loginUrl);
     }
 
-    // If logged in as Wholesaler -> block access and redirect to Wholesaler Dashboard
-    if (userRole === "WHOLESALER") {
-      return createRedirectResponse(new URL(`${localePrefix}/wholesaler/dashboard`, request.url));
+    // If not a Retailer -> block access
+    if (userRole !== "RETAILER" && userRole !== "SHOP_OWNER") {
+      const target = userRole === "WHOLESALER" ? `${localePrefix}/wholesaler/dashboard` : `${localePrefix}/`;
+      return createRedirectResponse(new URL(target, request.url));
     }
   }
 
@@ -170,8 +172,11 @@ export const createClient = async (request: NextRequest, response?: NextResponse
       if (userRole === "WHOLESALER") {
         return createRedirectResponse(new URL(`${localePrefix}/wholesaler/dashboard`, request.url));
       }
-      if (userRole === "SHOP_OWNER") {
+      if (userRole === "RETAILER" || userRole === "SHOP_OWNER") {
         return createRedirectResponse(new URL(`${localePrefix}/shop/catalog`, request.url));
+      }
+      if (userRole === "USER") {
+        return createRedirectResponse(new URL(`${localePrefix}/`, request.url));
       }
     }
   }

@@ -56,9 +56,9 @@ const STARTER_WHOLESALE_PRODUCTS = [
 
 /**
  * ============================================================================
- * SHOP OWNER CATALOG & SUPPLIERS PAGE (SERVER COMPONENT)
+ * RETAILER CATALOG & SUPPLIERS PAGE (SERVER COMPONENT)
  * ============================================================================
- * Central portal for retail store owners:
+ * Central portal for retailers:
  * 1. View store delivery profile.
  * 2. View connected wholesale suppliers (Scenario 1 & 2).
  * 3. Browse live B2B wholesale product pricing and minimum order quantities.
@@ -71,7 +71,7 @@ export default async function ShopCatalogPage() {
     redirect("/login");
   }
 
-  const { profile, shopOwner, connectedWholesalers } = data;
+  const { profile, retailer, connectedWholesalers } = data;
 
   return (
     <div className="space-y-8">
@@ -95,11 +95,11 @@ export default async function ShopCatalogPage() {
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
                 <span className="flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  <span>{shopOwner?.shop_category || "General Retail"}</span>
+                  <span>{retailer?.shop_category || "General Retail"}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  <span>{shopOwner?.delivery_address || "No delivery address registered"}</span>
+                  <span>{retailer?.delivery_address || "No delivery address registered"}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-neutral-400 shrink-0" />

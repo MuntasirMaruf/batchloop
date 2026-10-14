@@ -12,7 +12,8 @@
     "loading": "Loading...",
     "error": "An unexpected error occurred",
     "wholesaler": "Wholesaler",
-    "shopOwner": "Shop Owner"
+    "retailer": "Retailer",
+    "user": "User"
   },
   "nav": {
     "forWholesalers": "For Wholesalers",

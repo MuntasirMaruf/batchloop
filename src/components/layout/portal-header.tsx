@@ -12,11 +12,11 @@ import { roleRedirects, siteConfig } from "@/config";
  * UNIFIED REUSABLE PORTAL HEADER
  * ============================================================================
  * Single, shared top navigation bar for all authenticated portal pages
- * (both Wholesalers and Shop Owners) with i18n support.
+ * (both Wholesalers and Retailers) with i18n support.
  *
  * Automatically adapts based on the user's profile:
  * - Wholesaler: Blue badge, links to /wholesaler/dashboard
- * - Shop Owner: Emerald badge, links to /shop/catalog
+ * - Retailer: Emerald badge, links to /shop/catalog
  * - Displays brand logo, LanguageSwitcher, ThemeToggle, and Sign Out.
  * ============================================================================
  */
@@ -57,7 +57,7 @@ export function PortalHeader({ profile }: PortalHeaderProps) {
           ) : (
             <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-retailer-subtle text-retailer-text dark:text-retailer border border-retailer-border whitespace-nowrap">
               <Store className="w-3 h-3 shrink-0" />
-              <span className="hidden xs:inline sm:inline">{t("shopOwner")}</span>
+              <span className="hidden xs:inline sm:inline">{t("retailer")}</span>
             </span>
           )}
         </div>

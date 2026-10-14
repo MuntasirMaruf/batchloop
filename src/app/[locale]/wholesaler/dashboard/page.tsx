@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  * ============================================================================
  * Central hub for Wholesalers to:
  * 1. View business profile summary & warehouse location.
- * 2. Inspect connected retail shop owners.
+ * 2. Inspect connected retailers.
  * 
  * NOTE: Customer invite link generation & management will be handled
  * via NestJS API endpoints (Scenario 1) in upcoming backend phases.

@@ -4,7 +4,7 @@ import { PortalHeader } from "@/components/layout/portal-header";
 
 /**
  * ============================================================================
- * SHOP OWNER PORTAL LAYOUT
+ * RETAILER PORTAL LAYOUT
  * ============================================================================
  * Wraps all retailer pages (/shop/*) with the shared PortalHeader
  * and ensures role-based authentication.
@@ -16,11 +16,11 @@ export default async function ShopLayout({
   children: React.ReactNode;
 }) {
   // [COOKIE USAGE - SERVER LAYOUT GUARD]:
-  // Reads the HTTP-only cookie via `getCurrentUserProfile()` to verify the user is an authenticated SHOP_OWNER.
+  // Reads the HTTP-only cookie via `getCurrentUserProfile()` to verify the user is an authenticated RETAILER.
   const profile = await getCurrentUserProfile();
 
-  // Defense in depth: Verify authenticated shop owner
-  if (!profile || profile.role !== "SHOP_OWNER") {
+  // Defense in depth: Verify authenticated retailer
+  if (!profile || (profile.role !== "RETAILER" && (profile.role as string) !== "SHOP_OWNER")) {
     redirect("/login");
   }
 

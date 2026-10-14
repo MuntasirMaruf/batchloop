@@ -81,8 +81,10 @@ export const routes = {
  */
 export const roleRedirects: Record<UserRole, string> = {
   WHOLESALER: routes.wholesaler.dashboard,
+  RETAILER: routes.shop.catalog,
   SHOP_OWNER: routes.shop.catalog,
   ADMIN: "/admin/dashboard",
+  USER: routes.public.home,
 } as const;
 
 /**

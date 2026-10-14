@@ -52,7 +52,7 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
   // Extract the named fields packaged into FormData by `register/page.tsx`.
   const email = (formData.get("email") as string)?.trim();
   const password = formData.get("password") as string;
-  const role = (formData.get("role") as UserRole) || "SHOP_OWNER";
+  const role = (formData.get("role") as UserRole) || "RETAILER";
   const businessName = (formData.get("business_name") as string)?.trim();
   const phoneNumber = (formData.get("phone_number") as string)?.trim();
   const inviteToken = (formData.get("invite_token") as string)?.trim() || null;
@@ -140,21 +140,39 @@ export async function signUpAction(formData: FormData): Promise<AuthResponse> {
           tokenRecord.uses_count < tokenRecord.max_uses;
 
         if (isNotExpired && hasUsesLeft) {
-          // Initialize shop_owner stub row to satisfy foreign key constraint (`connections.shop_owner_id -> shop_owners.id`)
-          await supabase.from("shop_owners").upsert({
+          // Initialize retailer stub row to satisfy foreign key constraint (`connections.retailer_id -> retailers.id`)
+          const { error: stubError } = await supabase.from("retailers").upsert({
             id: userId,
             delivery_address: "",
           });
+          // Fallback if DB table has not yet been renamed from shop_owners
+          if (stubError) {
+            await supabase.from("shop_owners").upsert({
+              id: userId,
+              delivery_address: "",
+            });
+          }
 
           // Create ACTIVE connection immediately (bypasses manual KYC approval)
-          await supabase.from("connections").insert({
+          const { error: connError } = await supabase.from("connections").insert({
             wholesaler_id: tokenRecord.wholesaler_id,
-            shop_owner_id: userId,
+            retailer_id: userId,
             status: "ACTIVE",
             connected_via: "INVITE",
             invitation_token_id: tokenRecord.id,
             connected_at: new Date().toISOString(),
           });
+          // Fallback if connections table column has not yet been renamed to retailer_id
+          if (connError) {
+            await supabase.from("connections").insert({
+              wholesaler_id: tokenRecord.wholesaler_id,
+              shop_owner_id: userId,
+              status: "ACTIVE",
+              connected_via: "INVITE",
+              invitation_token_id: tokenRecord.id,
+              connected_at: new Date().toISOString(),
+            });
+          }
 
           // Increment invitation token usage count
           await supabase
@@ -236,14 +254,25 @@ export async function signInAction(formData: FormData): Promise<AuthResponse> {
     return { success: true, redirectUrl: "/wholesaler/dashboard" };
   }
 
-  if (profile.role === "SHOP_OWNER") {
-    const { data: shopOwner } = await supabase
-      .from("shop_owners")
+  if (profile.role === "RETAILER" || (profile.role as string) === "SHOP_OWNER") {
+    let retailerData = null;
+    const { data: retailer } = await supabase
+      .from("retailers")
       .select("delivery_address")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
-    if (!shopOwner || !shopOwner.delivery_address) {
+    retailerData = retailer;
+    if (!retailerData) {
+      const { data: legacyShopOwner } = await supabase
+        .from("shop_owners")
+        .select("delivery_address")
+        .eq("id", userId)
+        .maybeSingle();
+      retailerData = legacyShopOwner;
+    }
+
+    if (!retailerData || !retailerData.delivery_address) {
       return { success: true, redirectUrl: "/onboarding" };
     }
     return { success: true, redirectUrl: "/shop/catalog" };
@@ -271,7 +300,7 @@ export async function signOutAction(): Promise<AuthResponse> {
 /**
  * [LOGOUT METHOD 2 - SERVER FORM ACTION]:
  * Called by `<form action={logoutAction}>` in `src/components/layout/portal-header.tsx`
- * when a Wholesaler or Shop Owner clicks "Sign Out" in the top navigation bar.
+ * when a Wholesaler or Retailer clicks "Sign Out" in the top navigation bar.
  */
 export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
@@ -290,29 +319,29 @@ export async function logoutAction(): Promise<void> {
  * ============================================================================
  * 1. USER SUBMITS (/onboarding):
  *    User provides operational details (Warehouse address for Wholesaler,
- *    or Delivery address & category for Shop Owner).
+ *    or Delivery address & category for Retailer).
  * 
  * 2. AUTHENTICATION VERIFICATION:
  *    supabase.auth.getUser() reads the HTTP-only cookie to identify who is submitting.
  * 
  * 3. ROLE DISCOVERY:
  *    Queries `public.profiles` using user.id to verify whether this user is a
- *    `WHOLESALER` or a `SHOP_OWNER`.
+ *    `WHOLESALER` or a `RETAILER`.
  * 
- * 4. DIRECT DATABASE UPSERT (wholesalers OR shop_owners):
+ * 4. DIRECT DATABASE UPSERT (wholesalers OR retailers):
  *    Unlike Step 1 (which used a database trigger), this step writes DIRECTLY from
  *    Next.js via `supabase.from(...).upsert(...)`:
  *    - If WHOLESALER -> writes to `public.wholesalers` table.
- *    - If SHOP_OWNER  -> writes to `public.shop_owners` table.
+ *    - If RETAILER   -> writes to `public.retailers` table.
  * 
  *    WHY UPSERT INSTEAD OF INSERT?
- *    If a Shop Owner registered via an invite link (Scenario 1), signUpAction already
+ *    If a Retailer registered via an invite link (Scenario 1), signUpAction already
  *    created an empty stub row. `upsert` safely updates that stub row with their actual
  *    delivery address. If no row exists, it inserts a new one.
  * 
  * 5. REDIRECT TO STARTER DASHBOARD:
  *    - Wholesalers -> redirectUrl: "/wholesaler/dashboard"
- *    - Shop Owners -> redirectUrl: "/shop/catalog"
+ *    - Retailers   -> redirectUrl: "/shop/catalog"
  * ============================================================================
  */
 export async function completeOnboardingAction(
@@ -374,8 +403,8 @@ export async function completeOnboardingAction(
     return { success: true, redirectUrl: "/wholesaler/dashboard" };
   }
 
-  // 3B. If SHOP_OWNER -> Validate and save directly to `public.shop_owners`
-  if (profile.role === "SHOP_OWNER") {
+  // 3B. If RETAILER -> Validate and save directly to `public.retailers`
+  if (profile.role === "RETAILER" || (profile.role as string) === "SHOP_OWNER") {
     const deliveryAddress = (
       formData.get("delivery_address") as string
     )?.trim();
@@ -385,18 +414,26 @@ export async function completeOnboardingAction(
       (formData.get("trade_license_number") as string)?.trim() || "";
 
     if (!deliveryAddress) {
-      return { error: "Delivery address is required for Shop Owners." };
+      return { error: "Delivery address is required for Retailers." };
     }
 
     // [COOKIE USAGE - AUTHORIZE DATABASE WRITE WITH RLS]:
     // Forwards the cookie's JWT to PostgreSQL RLS (`auth.uid() = id`) and updates the stub row
-    // if the shop owner registered via a Scenario 1 invite link.
-    const { error: upsertError } = await supabase.from("shop_owners").upsert({
+    // if the retailer registered via a Scenario 1 invite link.
+    const payload = {
       id: user.id,
       delivery_address: deliveryAddress,
       shop_category: shopCategory,
       trade_license_number: tradeLicense,
-    });
+    };
+
+    let { error: upsertError } = await supabase.from("retailers").upsert(payload);
+
+    // Fallback if database table has not yet been renamed from shop_owners
+    if (upsertError) {
+      const fallback = await supabase.from("shop_owners").upsert(payload);
+      upsertError = fallback.error;
+    }
 
     if (upsertError) {
       return { error: upsertError.message };
@@ -416,7 +453,7 @@ export async function completeOnboardingAction(
  *   1. `src/app/[locale]/page.tsx` (Landing page)
  *   2. `src/app/[locale]/(auth)/onboarding/page.tsx` (Onboarding route guard)
  *   3. `src/app/[locale]/wholesaler/layout.tsx` (Wholesaler portal layout)
- *   4. `src/app/[locale]/shop/layout.tsx` (Shop Owner portal layout)
+ *   4. `src/app/[locale]/shop/layout.tsx` (Retailer portal layout)
  * ============================================================================
  */
 export async function getCurrentUserProfile() {

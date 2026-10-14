@@ -54,7 +54,7 @@ export function OnboardingForm({ profile }: OnboardingFormProps) {
     try {
       // [SENDING DATA TO SERVER ACTION (AUTHENTICATED BY HTTP-ONLY COOKIE)]:
       // `completeOnboardingAction` reads the user's HTTP-only cookie to identify `user.id`
-      // and uses its JWT to upsert `public.wholesalers` or `public.shop_owners` under RLS.
+      // and uses its JWT to upsert `public.wholesalers` or `public.retailers` under RLS.
       const result = await completeOnboardingAction(formData);
 
       if (result.error) {
@@ -122,7 +122,7 @@ export function OnboardingForm({ profile }: OnboardingFormProps) {
           )}
         </div>
         <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          {isWholesaler ? "Wholesaler Setup" : "Shop Profile Setup"}
+          {isWholesaler ? "Wholesaler Setup" : "Retailer Setup"}
         </h1>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 max-w-sm mx-auto">
           {isWholesaler
@@ -198,7 +198,7 @@ export function OnboardingForm({ profile }: OnboardingFormProps) {
             </div>
           </>
         ) : (
-          /* ================= SHOP OWNER FIELDS ================= */
+          /* ================= RETAILER FIELDS ================= */
           <>
             <div>
               <label

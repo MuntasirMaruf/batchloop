@@ -2,10 +2,10 @@
 
 /**
  * ============================================================================
- * SHOP OWNER PORTAL SERVER ACTIONS
+ * RETAILER PORTAL SERVER ACTIONS
  * ============================================================================
- * This file contains server-side actions for the Shop Owner Portal:
- * 1. getShopPortalData: Fetches the shop owner's profile, store details, and
+ * This file contains server-side actions for the Retailer Portal:
+ * 1. getShopPortalData: Fetches the retailer's profile, store details, and
  *    list of connected wholesalers (including those connected via Scenario 1 invites).
  * ============================================================================
  */
@@ -27,7 +27,7 @@ export interface ConnectedWholesalerRecord {
 
 /**
  * GET SHOP PORTAL DATA
- * Retrieves the authenticated shop owner's profile and all connected wholesale suppliers.
+ * Retrieves the authenticated retailer's profile and all connected wholesale suppliers.
  */
 export async function getShopPortalData() {
   // [COOKIE USAGE - READ SESSION IN SERVER ACTION]:
@@ -37,7 +37,7 @@ export async function getShopPortalData() {
   const supabase = createClient(cookieStore);
 
   // [COOKIE USAGE - EXTRACT USER ID]:
-  // Decrypts and validates the JWT stored in the cookie to identify the logged-in shop owner.
+  // Decrypts and validates the JWT stored in the cookie to identify the logged-in retailer.
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -51,19 +51,42 @@ export async function getShopPortalData() {
     .eq("id", user.id)
     .single();
 
-  // B. Fetch Shop Owner Extension Details
-  const { data: shopOwner } = await supabase
-    .from("shop_owners")
+  // B. Fetch Retailer Extension Details (with fallback to legacy shop_owners table)
+  let retailerData = null;
+  const { data: retailer } = await supabase
+    .from("retailers")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  // C. Fetch Connected Wholesalers
-  const { data: rawConnections } = await supabase
+  retailerData = retailer;
+  if (!retailerData) {
+    const { data: legacyShopOwner } = await supabase
+      .from("shop_owners")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+    retailerData = legacyShopOwner;
+  }
+
+  // C. Fetch Connected Wholesalers (with fallback to legacy shop_owner_id column)
+  let rawConnections: any[] | null = null;
+  const { data: connByRetailer, error: connRetailerErr } = await supabase
     .from("connections")
     .select("*")
-    .eq("shop_owner_id", user.id)
+    .eq("retailer_id", user.id)
     .order("created_at", { ascending: false });
+
+  if (!connRetailerErr && connByRetailer) {
+    rawConnections = connByRetailer;
+  } else {
+    const { data: connByShopOwner } = await supabase
+      .from("connections")
+      .select("*")
+      .eq("shop_owner_id", user.id)
+      .order("created_at", { ascending: false });
+    rawConnections = connByShopOwner || [];
+  }
 
   const connectedWholesalers: ConnectedWholesalerRecord[] = [];
 
@@ -108,7 +131,8 @@ export async function getShopPortalData() {
 
   return {
     profile: profile ? { ...profile, email: user.email } : null,
-    shopOwner,
+    retailer: retailerData,
+    retailer: retailerData,
     connectedWholesalers,
   };
 }

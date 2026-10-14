@@ -59,7 +59,7 @@ export default async function Home() {
           </Link>
 
           <Link
-            href={`${routes.auth.register}?role=shop_owner`}
+            href={`${routes.auth.register}?role=retailer`}
             className="p-5 sm:p-6 rounded-2xl border border-border bg-card hover:border-border-hover transition-all shadow-xs group"
           >
             <div className="p-3 rounded-xl bg-retailer-subtle text-retailer-text dark:text-retailer w-fit mb-3">

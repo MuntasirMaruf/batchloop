@@ -31,12 +31,12 @@ function RegisterForm() {
     const roleParam = searchParams.get("role")?.toLowerCase();
 
     // [ROLE LOCKING ON INVITE LINK]:
-    // Determine initial role: locked to SHOP_OWNER if invite token exists,
+    // Determine initial role: locked to RETAILER if invite token exists,
     // or pre-selected from ?role= query parameter (e.g., from homepage cards).
     // Defaults to WHOLESALER if not specified.
     const resolveRole = (): UserRole => {
-        if (inviteToken) return "SHOP_OWNER";
-        if (roleParam === "shop_owner" || roleParam === "retail") return "SHOP_OWNER";
+        if (inviteToken) return "RETAILER";
+        if (roleParam === "retailer" || roleParam === "shop_owner" || roleParam === "retail") return "RETAILER";
         return "WHOLESALER";
     };
 
@@ -48,8 +48,8 @@ function RegisterForm() {
         setPrevRoleParam(roleParam);
         if (!inviteToken) {
             setSelectedRole(
-                roleParam === "shop_owner" || roleParam === "retail"
-                    ? "SHOP_OWNER"
+                roleParam === "retailer" || roleParam === "shop_owner" || roleParam === "retail"
+                    ? "RETAILER"
                     : "WHOLESALER"
             );
         }
@@ -145,21 +145,21 @@ function RegisterForm() {
 
                         <button
                             type="button"
-                            onClick={() => setSelectedRole("SHOP_OWNER")}
-                            className={`p-3 rounded-lg border text-left transition-all flex flex-col gap-1.5 ${selectedRole === "SHOP_OWNER"
+                            onClick={() => setSelectedRole("RETAILER")}
+                            className={`p-3 rounded-lg border text-left transition-all flex flex-col gap-1.5 ${selectedRole === "RETAILER"
                                 ? "border-neutral-900 dark:border-neutral-100 bg-neutral-900/5 dark:bg-white/5 ring-1 ring-neutral-900 dark:ring-neutral-100"
                                 : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
                                 }`}
                         >
                             <Store
-                                className={`w-5 h-5 ${selectedRole === "SHOP_OWNER"
+                                className={`w-5 h-5 ${selectedRole === "RETAILER"
                                     ? "text-neutral-900 dark:text-neutral-100"
                                     : "text-neutral-400"
                                     }`}
                             />
                             <div>
                                 <span className="text-xs font-bold block text-neutral-900 dark:text-neutral-100">
-                                    Shop Owner
+                                    Retailer
                                 </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
                                     {t("retailerSubtitle")}
@@ -200,7 +200,7 @@ function RegisterForm() {
                 <input
                     type="hidden"
                     name="role"
-                    value={inviteToken ? "SHOP_OWNER" : selectedRole}
+                    value={inviteToken ? "RETAILER" : selectedRole}
                 />
                 {inviteToken && (
                     <input type="hidden" name="invite_token" value={inviteToken} />

@@ -317,7 +317,7 @@ batchloop/
 │   │       ├── layout.tsx       # Localized layout (<html lang="...">, NextIntlClientProvider)
 │   │       ├── page.tsx         # Localized home page
 │   │       ├── (auth)/          # Localized login, register, onboarding
-│   │       ├── shop/            # Localized shop owner portal & catalog
+│   │       ├── shop/            # Localized retailer portal & catalog
 │   │       └── wholesaler/      # Localized wholesaler portal & dashboard
 │   ├── components/
 │   │   └── layout/

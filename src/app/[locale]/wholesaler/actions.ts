@@ -18,7 +18,8 @@ import { cookies } from "next/headers";
 
 export interface ConnectedShopRecord {
   connectionId: string;
-  shopOwnerId: string;
+  retailerId: string;
+  shopOwnerId?: string; // Backwards-compatibility alias
   businessName: string;
   phoneNumber: string;
   deliveryAddress: string;
@@ -71,18 +72,30 @@ export async function getWholesalerDashboardData() {
   const connectedShops: ConnectedShopRecord[] = [];
 
   if (rawConnections && rawConnections.length > 0) {
-    const shopOwnerIds = rawConnections.map((c) => c.shop_owner_id);
+    const retailerIds = rawConnections.map((c) => c.retailer_id || c.shop_owner_id);
 
-    // Fetch matching profiles and shop_owner details
+    // Fetch matching profiles and retailer details
     const { data: shopProfiles } = await supabase
       .from("profiles")
       .select("id, business_name, phone_number")
-      .in("id", shopOwnerIds);
+      .in("id", retailerIds);
 
-    const { data: shopDetails } = await supabase
-      .from("shop_owners")
+    // Try retailers table first with fallback to legacy shop_owners
+    let shopDetails = null;
+    const { data: retDetails } = await supabase
+      .from("retailers")
       .select("id, delivery_address, shop_category")
-      .in("id", shopOwnerIds);
+      .in("id", retailerIds);
+
+    if (retDetails && retDetails.length > 0) {
+      shopDetails = retDetails;
+    } else {
+      const { data: legacyShopDetails } = await supabase
+        .from("shop_owners")
+        .select("id, delivery_address, shop_category")
+        .in("id", retailerIds);
+      shopDetails = legacyShopDetails;
+    }
 
     const profileMap = new Map(
       (shopProfiles || []).map((p) => [p.id, p])
@@ -92,12 +105,14 @@ export async function getWholesalerDashboardData() {
     );
 
     for (const conn of rawConnections) {
-      const p = profileMap.get(conn.shop_owner_id);
-      const d = detailsMap.get(conn.shop_owner_id);
+      const targetId = conn.retailer_id || conn.shop_owner_id;
+      const p = profileMap.get(targetId);
+      const d = detailsMap.get(targetId);
 
       connectedShops.push({
         connectionId: conn.id,
-        shopOwnerId: conn.shop_owner_id,
+        retailerId: targetId,
+        shopOwnerId: targetId,
         businessName: p?.business_name || "Unknown Store",
         phoneNumber: p?.phone_number || "N/A",
         deliveryAddress: d?.delivery_address || "Not specified",

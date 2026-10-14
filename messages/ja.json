@@ -12,7 +12,8 @@
     "loading": "読み込み中...",
     "error": "エラーが発生しました",
     "wholesaler": "卸売業者",
-    "shopOwner": "小売店主"
+    "retailer": "小売業者",
+    "user": "ユーザー"
   },
   "nav": {
     "forWholesalers": "卸売業者向け",
