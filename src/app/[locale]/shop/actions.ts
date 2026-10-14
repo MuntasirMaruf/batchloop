@@ -132,7 +132,6 @@ export async function getShopPortalData() {
   return {
     profile: profile ? { ...profile, email: user.email } : null,
     retailer: retailerData,
-    retailer: retailerData,
     connectedWholesalers,
   };
 }
